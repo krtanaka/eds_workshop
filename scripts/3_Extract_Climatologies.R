@@ -10,6 +10,8 @@ library(spatial)
 library(raster)
 library(lubridate)
 library(raster)
+library(dplyr)
+library(ggjoy)
 
 dir = getwd()
 
@@ -19,7 +21,7 @@ source("scripts/HelperCode/ExpandingExtract.R")
 # import survey data, SM = master REA survey file, subset if necessary
 load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER
 table(SM$REGION)
-SM = subset(SM, REGION == c("MHI", "NWHI"))
+SM = subset(SM, REGION %in% c("MHI", "NWHI"))
 
 SM$LONGITUDE_LOV = ifelse(SM$LONGITUDE_LOV < 0, SM$LONGITUDE_LOV + 360, SM$LONGITUDE_LOV)
 

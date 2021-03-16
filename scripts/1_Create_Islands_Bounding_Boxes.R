@@ -28,7 +28,7 @@ dim(df)
 ###############
 
 unique(df$REGION)
-region = unique(df$REGION)[6]
+region = unique(df$REGION)[5]
 
 # I tried different bounding methods... range(pretty()) seems reasonable.
 
