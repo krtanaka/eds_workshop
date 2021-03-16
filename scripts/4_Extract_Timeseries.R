@@ -361,8 +361,8 @@ end_time - start_time
 SM[SM == -9991] <- NA
 
 SM %>%
-  ggplot(aes(x = mean_SST_CRW_Daily_MO03, y = ISLAND, fill = ISLAND)) +
-  geom_joy(scale = 5, alpha = 0.8, size = 0.1, bandwidth = 1) +
+  ggplot(aes(x = mean_SST_CRW_Daily_MO03, y = ISLAND , fill = REGION )) +
+  geom_joy(scale = 5, alpha = 0.8, size = 0.1, bandwidth = 0.5) +
   ylab(NULL) +
   theme_minimal() +
-  theme(legend.position = "none")
+  theme(legend.position = "bottom")
