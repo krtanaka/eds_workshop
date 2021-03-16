@@ -1,0 +1,194 @@
+---
+title: "01_gitFishREACleanData"
+output: html_document
+---
+
+#####LOAD PACKAGES, FUNCTIONS, AND DATA
+```{r message = FALSE, warning = FALSE}
+rm(list=ls())
+library(gdata)             # needed for drop_levels()
+library(reshape)           # reshape library inclues the cast() function used below
+
+#LOAD LIBRARY FUNCTIONS 
+source("lib/core_functions.R")
+source("lib/fish_team_functions.R")
+
+# get strata and sectors data (NOTE: the data in the raw file should be checked and updated)
+sectors<-read.csv("data/Sectors-Strata-Areas.csv", stringsAsFactors=FALSE)
+# load site master to merge with sector names
+sm<-read.csv("data/SURVEY MASTER.csv")
+sm$SITE<-SiteNumLeadingZeros(sm$SITE)
+
+#load fish data
+load("data/ALL_REA_FISH_RAW.rdata")
+x<-df
+
+names(x)
+##notes about columns:
+#"SUBREGION" = likely for specific reports
+#"SPECIAL_AREA" = likely for specific reports
+#"CCA" --> "OTHER_TYPE" = used to collect all these individually --> now pooled into "other" to match our current methods
+#"HYBRID" = never used
+#"APHIAID" = something from the Oracle Database (s'thing to match up our names with WORMS)
+#"OLD_SIZE_BINS" = used to use 5-cm classes (A, B, etc.)
+#"OBS_DESC" = description
+#"FISH_SPC_CORISID" = something from the Oracle Database (archiving ID?)
+```
+
+
+#####CLEAN DATASET
+```{r message = FALSE, warning = FALSE}
+#keep only columns we currently use
+DATA_COLS<-c("SITEVISITID", "METHOD", "DATE_", "OBS_YEAR",  "SITE", "REEF_ZONE",  "DEPTH_BIN",  "ISLAND", "LATITUDE",  "LONGITUDE",  "REGION" , "REGION_NAME", "SECTOR", "SPECIAL_AREA", "EXCLUDE_FLAG", "TRAINING_YN",
+"REP",  "REPLICATEID", "DIVER", "HABITAT_CODE", "DEPTH", 
+"HARD_CORAL", "MA",  "TA",  "CCA",  "SAND",  "SOFT_CORAL", "CLAM" , "SPONGE", "CORALLIMORPH", "CYANO", "TUNICATE", "ZOANTHID" , "OTHER", "OTHER_TYPE", 
+"SPECIES", "COUNT", "SIZE_", "OBS_TYPE", 
+"COMPLEXITY", "SUBSTRATE_HEIGHT_0", "SUBSTRATE_HEIGHT_20", "SUBSTRATE_HEIGHT_50", "SUBSTRATE_HEIGHT_100", "SUBSTRATE_HEIGHT_150", "MAX_HEIGHT", "VISIBILITY",
+"SCIENTIFIC_NAME",  "TAXONNAME", "COMMONNAME", "GENUS", "FAMILY" , "COMMONFAMILYALL", "LMAX", "LW_A",  "LW_B",  "LENGTH_CONVERSION_FACTOR", "TROPHIC", "TROPHIC_MONREP")
+head(x[,DATA_COLS])
+x<-x[,DATA_COLS]
+
+#update SITE to have three numeric digits (eg OAH-01 becomes OAH-001)
+x$SITE<-SiteNumLeadingZeros(x$SITE)
+
+#remove data from certain types of surveys 
+x[is.na(x$TRAINING_YN),]$TRAINING_YN<-FALSE   #change NAs to FALSE --> none of the older data was 'training data'
+x<-subset(x, x$TRAINING_YN==FALSE) #drop data from training surveys
+x<-subset(x, x$EXCLUDE_FLAG==0, drop=TRUE) #drop data flagged as needed to be excluded
+x<-subset(x, x$METHOD %in% c("nSPC", "nSPC-CCR"), drop=TRUE) #only keep nSPC surveys
+#x<-subset(x, x$OBS_YEAR >2008, drop=TRUE) #can subset by survey years
+
+#subset data from different periods of SPC surveys
+x<-subset(x, x$OBS_TYPE %in% c("U","I","N", "F", "T", "P"))  #as written, this includes all the data (all categories) --> **FILTER data types in next script (02_gitFishREACalcWD)
+#I = instantaneous; N = non-instantaneous; F = new species seen during 5-10 min window of survey; T = new species seen during 10-30 min window of survey; P = presence (outside cylinder, species of interest)
+
+#add SURVEY MASTER information to dataset  
+x<-merge(x, sm[,c("SITEVISITID", "SEC_NAME", "ANALYSIS_YEAR", "ANALYSIS_SCHEME")], by=c("SITEVISITID"), all.x=TRUE)
+
+#CHECK THAT all ANALYSIS_SCHEMES are present in the site_master file)
+idw<-x[is.na(x$ANALYSIS_SCHEME)  & x$METHOD=="nSPC", c("REGION", "SITE","OBS_YEAR", "METHOD"),]
+if(dim(idw)[1]>0) {cat("nSPC sites with MISSING ANALYSIS_SCHEME")}   # should be 0
+
+#where there is substrate_height data, calculate avg height and ave_height_variability to standardize complexity metrics (mean height, mean height variability, max height)
+#potentially useful metrics to include as potential covariates, but likely only reflect lg contrasts (e.g. flat vs. very complex) rather than a range with subtle differences
+sh_out<-CalcMeanSHMeanSHDiff(x)
+x$MEAN_SH<-sh_out[[1]]
+x$SD_SH_DIFF<-sh_out[[3]]
+x<-x[, setdiff(names(x),c("SUBSTRATE_HEIGHT_0", "SUBSTRATE_HEIGHT_20", "SUBSTRATE_HEIGHT_50", "SUBSTRATE_HEIGHT_100", "SUBSTRATE_HEIGHT_150"))] #remove SUBSTRATE_HEIGHT fields
+
+x<-droplevels(x) #drop unused levels
+
+#convert COMPLEXITY to a numeric field: used to rate coral rugosity/complexity on 1-6 scale; complexity only used 1-2 years before switching to substrate_height method above
+# *NOTE: SUBSTRATE_HEIGHT and COMPLEXITY are not directly comparable --> there are calibration coeffs. in supplement of 2015 PlosOne paper (human pop'n vs. fish), but easiest to just use data starting in 2012 (all SUBSTRATE_HEIGHT method)
+x$COMPLEXITY<-as.vector(toupper(x$COMPLEXITY))
+x[is.na(x$COMPLEXITY),"COMPLEXITY"]<-"UNKNOWN"
+COMPLEXITY_VALUES<-toupper(c("Low", "Med-Low", "Med", "Med-Hi", "Hi", "Very-Hi"))
+x$ComplexityValue<-NaN
+for (i in 1:length(COMPLEXITY_VALUES)){
+	if(COMPLEXITY_VALUES[i] %in% x$COMPLEXITY){
+		x[x$COMPLEXITY==COMPLEXITY_VALUES[i],]$ComplexityValue<-i
+	}
+}
+```
+
+
+#####CLEAN UP NAs
+```{r message = FALSE, warning = FALSE}
+tmp.lev<-levels(x$HABITAT_CODE); head(tmp.lev)
+levels(x$HABITAT_CODE)<-c(tmp.lev, "UNKNOWN")
+tmp.lev<-levels(x$SCIENTIFIC_NAME); head(tmp.lev)
+levels(x$SCIENTIFIC_NAME)<-c(tmp.lev, "UNKNOWN")
+tmp.lev<-levels(x$COMMONNAME); head(tmp.lev)
+levels(x$COMMONNAME)<-c(tmp.lev, "UNKNOWN")
+tmp.lev<-levels(x$GENUS); head(tmp.lev)
+levels(x$GENUS)<-c(tmp.lev, "UNKNOWN")
+tmp.lev<-levels(x$FAMILY); head(tmp.lev)
+levels(x$FAMILY)<-c(tmp.lev, "UNKNOWN")
+tmp.lev<-levels(x$COMMONFAMILYALL); head(tmp.lev)
+levels(x$COMMONFAMILYALL)<-c(tmp.lev, "UNKNOWN")
+tmp.lev<-levels(x$TROPHIC_MONREP); head(tmp.lev)
+levels(x$TROPHIC_MONREP)<-c(tmp.lev, "UNKNOWN")
+
+x[is.na(x$HABITAT_CODE),"HABITAT_CODE"]<-"UNKNOWN"
+x[is.na(x$SCIENTIFIC_NAME),"SCIENTIFIC_NAME"]<-"UNKNOWN"
+x[is.na(x$COMMONNAME),"COMMONNAME"]<-"UNKNOWN"
+x[is.na(x$GENUS),"GENUS"]<-"UNKNOWN"
+x[is.na(x$FAMILY),"FAMILY"]<-"UNKNOWN"
+x[is.na(x$COMMONFAMILYALL),"COMMONFAMILYALL"]<-"UNKNOWN"
+x[is.na(x$TROPHIC_MONREP),"TROPHIC_MONREP"]<-"UNKNOWN"
+
+x[is.na(x$COUNT),]$COUNT<-0
+x[is.na(x$SIZE_),]$SIZE_<-0
+#x[is.na(x$LMAX),]$LMAX<-999
+```
+
+#####ADDITIONAL TWEAKS TO DATASET
+```{r message = FALSE, warning = FALSE}
+##Separate out the North and South Marianas (i.e., subregions of interest that are not similar to each other) 
+#regional level
+levels(x$REGION)<-c(levels(x$REGION), "S.MARIAN", "N.MARIAN")
+x[x$ISLAND %in% c("Guam", "Rota", "Aguijan", "Tinian", "Saipan"),]$REGION<-"S.MARIAN"
+x[x$ISLAND %in% c("Alamagan","Guguan","Sarigan","Pagan", "Agrihan", "Asuncion", "Maug", "Farallon de Pajaros"),]$REGION<-"N.MARIAN"
+
+#sector level
+sectors[sectors$ISLAND %in% c("Guam", "Rota", "Aguijan", "Tinian", "Saipan"),]$REGION<-"S.MARIAN"
+sectors[sectors$ISLAND %in% c("Alamagan","Guguan","Sarigan","Pagan", "Agrihan", "Asuncion", "Maug", "Farallon de Pajaros"),]$REGION<-"N.MARIAN"
+sectors<-droplevels(sectors) #drop unused levels
+save(sectors, file="TMPsectors.Rdata")  # save cleaned up sectors file
+
+##Set NAs in visibility to -999 (earlier surveys didn't measure visibility); *NOTE: NWHI 2012 has visibility of only NA
+unique(x[is.na(x$VISIBILITY),c("REGION", "OBS_YEAR")])
+x[is.na(x$VISIBILITY),]$VISIBILITY<- -999
+#x[x$VISIBILITY>30,]$VISIBILITY<- 30
+
+##Fix unknown lat/longs from sites surveyed by Val Brown in Guam in 2015. Values we are assigning here are probably about right, but technically we don't know for sure (don't want it to become permanent in Oracle Database -- adjust in script only)
+x[x$SITE=="GUA-01310",]$LATITUDE<-13.24173
+x[x$SITE=="GUA-01310",]$LONGITUDE<-144.70428
+
+x<-droplevels(x) #drop unused levels
+```
+
+
+#####CLEAN UP BENTHIC DATA (% cover estimates during SPC surveys [NOT benthic team surveys])
+```{r message = FALSE, warning = FALSE}
+#NOTE: benthos do not always add up to 100% or observations were not entered at all; Oracle Database now has a QC check for this during data entry.
+#fix for this issue is below, but probably best to make permanent fixes in the Oracle Database: replace NAs with data from the dive buddy that did enter benthic observations
+
+BENTHIC_FIELDS<-c("HARD_CORAL", "SOFT_CORAL", "MA", "CCA", "TA", "SAND", "CYANO", "CLAM", "CORALLIMORPH", "ZOANTHID", "TUNICATE", "SPONGE", "OTHER")
+UNIQUE_ROUND<-c("REGION", "OBS_YEAR", "METHOD")
+round_table<-Aggregate_InputTable(x, UNIQUE_ROUND)
+
+x$countBD<-apply(x[,BENTHIC_FIELDS], 1, function(xx) length(which(!is.na(xx))))  #IDW 10-22-2013 checking for situation where there is NO benthic data at all
+for(i in 1:dim(round_table)[1])
+{
+	if(round_table[i,"METHOD"] %in% c("nSPC", "nSPC-CCR"))
+	{
+		tmp_data<-x[x$OBS_YEAR==round_table[i,"OBS_YEAR"] & x$METHOD==round_table[i,"METHOD"] & x$REGION==round_table[i,"REGION"],]
+
+		#go through BENTHIC_FIELDS, checking whether there are some NAs and some data values
+		for(j in 1:length(BENTHIC_FIELDS))
+		{
+			## IF there are both NAs and data
+			if(length(tmp_data[!is.na(tmp_data[,BENTHIC_FIELDS[j]]),BENTHIC_FIELDS[j]]) > 0 
+			        & length(tmp_data[is.na(tmp_data[,BENTHIC_FIELDS[j]]),BENTHIC_FIELDS[j]]) > 0) 
+			{
+				#set all NAs of that field to 0
+				tmp_data[is.na(tmp_data[,BENTHIC_FIELDS[j]]),BENTHIC_FIELDS[j]]<-0	
+
+				#now rewrite the benthic fields with NAs converted to zeros
+				x[x$OBS_YEAR==round_table[i,"OBS_YEAR"] & x$METHOD==round_table[i,"METHOD"] & x$REGION==round_table[i,"REGION"],BENTHIC_FIELDS[j]]<-tmp_data[,BENTHIC_FIELDS[j]]
+			}
+		}
+	}
+}
+# now reset zeros to NAs for all records where there was NO benthic data at all (otherwise, use dive buddy's data that was entered if other buddy didn't have any data)
+x[x$countBD==0,BENTHIC_FIELDS]<-NA
+```
+
+
+#####SAVE FINAL WORKING DATA, READY TO ANALYZE
+```{r message = FALSE, warning = FALSE}
+wd<-droplevels(x) #drop unused levels
+save(wd, file="TMPwd.Rdata")  #save clean working data
+```
+
