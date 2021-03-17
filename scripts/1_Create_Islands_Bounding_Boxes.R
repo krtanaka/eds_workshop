@@ -11,6 +11,8 @@ detach("package:plyr", unload = TRUE)
 library(dplyr)
 library(readr)
 library(ggplot2)
+library(rgeos)
+library(sf)
 
 load('data/SURVEY MASTER.RData'); df = SURVEY_MASTER
 
@@ -130,7 +132,6 @@ pacific_crop <- world_crop %>%
     ymax = 29))
 
 ggplot() +
-  geom_sf(data = pacific_crop, size = 0.01, fill = "gray10", color = "gray10") +
   geom_rect(data = df_sub,
             mapping = aes(
               xmin = LEFT_XMIN,
@@ -146,6 +147,23 @@ ggplot() +
               ymax = TOP_YMAX,
               fill = "Tom"), alpha = 0.5) +
   scale_fill_viridis_d("") +
-  # facet_wrap(.~ REGION, scales = "free") +
+  facet_wrap(.~ REGION, scales = "free") +
   annotation_map(map_data("world"))
 
+ggplot() +
+  geom_rect(data = df_sub,
+            mapping = aes(
+              xmin = LEFT_XMIN,
+              xmax = RIGHT_XMAX,
+              ymin = BOTTOM_YMIN,
+              ymax = TOP_YMAX,
+              fill = "Kisei"), alpha = 0.5) +
+  geom_rect(data = BB_ISL_sub,
+            mapping = aes(
+              xmin = LEFT_XMIN,
+              xmax = RIGHT_XMAX,
+              ymin = BOTTOM_YMIN,
+              ymax = TOP_YMAX,
+              fill = "Tom"), alpha = 0.5) +
+  scale_fill_viridis_d("") +
+  annotation_map(map_data("world"))
