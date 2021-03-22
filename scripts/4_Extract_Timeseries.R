@@ -256,6 +256,7 @@ for(parameter_i in 1:length(parameters)){
       }
 
       #TimeSeries Pull Indices
+      ijk$t_01mo = ijk$t_k - (30/tstep-1)
       ijk$t_03mo = ijk$t_k - (90/tstep-1)
       ijk$t_01yr = round(ijk$t_k-(1*365.25/tstep-1))
       ijk$t_03yr = round(ijk$t_k-(3*365.25/tstep-1))
@@ -263,11 +264,13 @@ for(parameter_i in 1:length(parameters)){
       ijk$t_10yr = round(ijk$t_k-(10*365.25/tstep-1))
 
       ijk[,c("t_k",
+             "t_01mo",
              "t_03mo",
              "t_01yr",
              "t_03yr",
              "t_05yr",
              "t_10yr")][which(ijk[,c("t_k",
+                                     "t_01mo",
                                      "t_03mo",
                                      "t_01yr",
                                      "t_03yr",
@@ -283,6 +286,7 @@ for(parameter_i in 1:length(parameters)){
 
         if(!paramsum.name %in% substr(names(SM), 1, nchar(paramsum.name))){
 
+          eval(parse(text = paste0("SM$",paramsum.name,"_MO01=-9991")))
           eval(parse(text = paste0("SM$",paramsum.name,"_MO03=-9991")))
           eval(parse(text = paste0("SM$",paramsum.name,"_YR01=-9991")))
           eval(parse(text = paste0("SM$",paramsum.name,"_YR03=-9991")))
@@ -298,6 +302,7 @@ for(parameter_i in 1:length(parameters)){
 
           # sumpt_i = 1
 
+          ts_01mo = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_01mo[sumpt_i]:ijk$t_k[sumpt_i]]
           ts_03mo = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_03mo[sumpt_i]:ijk$t_k[sumpt_i]]
           ts_01yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_01yr[sumpt_i]:ijk$t_k[sumpt_i]]
           ts_03yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_03yr[sumpt_i]:ijk$t_k[sumpt_i]]
@@ -307,6 +312,7 @@ for(parameter_i in 1:length(parameters)){
           ts_10yr01yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_10yr[sumpt_i]:ijk$t_01yr[sumpt_i]]
           ts_ALLB4 = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], 1:ijk$t_k[sumpt_i]]
 
+          t_01mo = t[ijk$t_01mo[sumpt_i]:ijk$t_k[sumpt_i]]
           t_03mo = t[ijk$t_03mo[sumpt_i]:ijk$t_k[sumpt_i]]
           t_01yr = t[ijk$t_01yr[sumpt_i]:ijk$t_k[sumpt_i]]
           t_03yr = t[ijk$t_03yr[sumpt_i]:ijk$t_k[sumpt_i]]
@@ -317,6 +323,7 @@ for(parameter_i in 1:length(parameters)){
 
           if(paramsum[sum_i] %in% c("mean", "q05", "q95","sd")){
 
+            eval(parse(text = paste0("SM$", paramsum.name, "_MO01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_01mo, na.rm = T)")))
             eval(parse(text = paste0("SM$", paramsum.name, "_MO03[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_03mo, na.rm = T)")))
             eval(parse(text = paste0("SM$", paramsum.name, "_YR01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_01yr, na.rm = T)")))
             eval(parse(text = paste0("SM$", paramsum.name, "_YR03[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_03yr, na.rm = T)")))
