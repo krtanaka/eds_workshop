@@ -85,22 +85,26 @@ detach("package:raster", unload = TRUE)
 
 SM_climtologies %>% select(ISLAND, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
   `colnames<-` (c("island", "chl_a_1998_2017")) %>%
-  ggplot(aes(x = chl_a_1998_2017, y = island, fill = island)) +
+  ggplot(aes(x = chl_a_1998_2017, y = island, fill = island, color = island)) +
   geom_joy(scale = 5, alpha = 0.8, size = 0.1, bandwidth = 0.03) +
   ylab(NULL) +
-  theme_minimal() +
+  ggdark::dark_theme_minimal() +
+  scale_fill_viridis_d("") +
+  scale_color_viridis_d("") +
   theme(legend.position = "none")
 
 SM_climtologies %>% select(ISLAND, SST_CRW_Clim_CumMean_1985_2018) %>%
   `colnames<-` (c("island", "sst_1985_2018")) %>%
-  ggplot(aes(x = sst_1985_2018, y = island, fill = island)) +
+  ggplot(aes(x = sst_1985_2018, y = island, fill = island, color = island)) +
   geom_joy(scale = 5, alpha = 0.8, size = 0, bandwidth = 0.5) +
   ylab(NULL) +
-  theme_minimal() +
+  ggdark::dark_theme_minimal() +
+  scale_fill_viridis_d("") +
+  scale_color_viridis_d("") +
   theme(legend.position = "none")
 
 # ########################################
-# ### paralleled loop (in developemnt) ###
+# ### paralleled loop (in development) ###
 # ########################################
 #
 # library(doParallel)
