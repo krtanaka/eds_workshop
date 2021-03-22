@@ -81,6 +81,8 @@ SM_climtologies = as.data.frame(SM_sp)
 if (!dir.exists(paste0(getwd(),"/outputs/"))) {dir.create(paste0(getwd(),"/outputs/"))}
 save(SM_climtologies, file = paste0("outputs/Climatologies_", Sys.Date(), ".RData"))
 
+detach("package:raster", unload = TRUE)
+
 SM_climtologies %>% select(ISLAND, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
   `colnames<-` (c("island", "chl_a_1998_2017")) %>%
   ggplot(aes(x = chl_a_1998_2017, y = island, fill = island)) +

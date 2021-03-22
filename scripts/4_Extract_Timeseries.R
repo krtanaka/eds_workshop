@@ -360,9 +360,33 @@ end_time - start_time
 
 SM[SM == -9991] <- NA
 
+library(visdat)
+vis_dat(SM[,c(11:115)])
+vis_miss(SM[,c(111:115)])
+
 SM %>%
   ggplot(aes(x = mean_SST_CRW_Daily_MO03, y = ISLAND , fill = REGION )) +
   geom_joy(scale = 5, alpha = 0.8, size = 0.1, bandwidth = 0.5) +
   ylab(NULL) +
-  theme_minimal() +
+  ggdark::dark_theme_bw() +
+  scale_fill_viridis_d() +
+  theme(legend.position = "bottom")
+
+load('outputs/Timeseries_2021-02-27.Rdata')
+SM[SM == -9991] <- NA
+
+vis_dat(SM[,c(52:380)], warn_large_data = F)
+vis_miss(SM[,c(52:380)], warn_large_data = F)
+
+n = SM %>% group_by(ISLAND) %>% summarise(n = n()) %>% subset(n > 100)
+big_islands = n$ISLAND
+
+SM %>%
+  subset(ISLAND %in% big_islands) %>%
+  ggplot(aes(x = sd_SST_CRW_Daily_YR10, y = ISLAND , fill = REGION, color = REGION)) +
+  geom_joy(scale = 5, alpha = 0.8, size = 0.01, bandwidth = 0.1) +
+  ylab(NULL) +
+  ggdark::dark_theme_minimal() +
+  scale_fill_viridis_d("") +
+  scale_color_viridis_d("") +
   theme(legend.position = "bottom")
