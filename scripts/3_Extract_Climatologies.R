@@ -103,9 +103,9 @@ SM_climtologies %>% select(ISLAND, SST_CRW_Clim_CumMean_1985_2018) %>%
   scale_color_viridis_d("") +
   theme(legend.position = "none")
 
-# ########################################
-# ### paralleled loop (in development) ###
-# ########################################
+# #######################
+# ### paralleled loop ###
+# #######################
 #
 # library(doParallel)
 #

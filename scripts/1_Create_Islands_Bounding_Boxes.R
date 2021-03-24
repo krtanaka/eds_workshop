@@ -13,6 +13,7 @@ library(readr)
 library(ggplot2)
 library(rgeos)
 library(sf)
+library(ggdark)
 
 load('data/SURVEY MASTER.RData'); df = SURVEY_MASTER
 
@@ -23,7 +24,7 @@ drop_LatLonNAs = unique(c(which(is.na(df$lon)), which(is.na(df$lat))))
 if(length(drop_LatLonNAs) > 0) df = df[-drop_LatLonNAs,]
 dim(df)
 
-# df$lon = ifelse(df$lon < 0, df$lon + 180, df$lon)
+# df$lon = ifelse(df$lon < 0, df$lon + 360, df$lon)
 
 ###############
 ### mapping ###
@@ -31,8 +32,6 @@ dim(df)
 
 unique(df$REGION)
 region = unique(df$REGION)[5]
-
-# I tried different bounding methods... range(pretty()) seems reasonable.
 
 df %>%
   subset(REGION == region) %>%
@@ -71,10 +70,9 @@ df %>%
     ymax = TOP_YMAX,
     fill = ISLAND,
     color = ISLAND), alpha = 0.2) +
-  # coord_fixed() +
   facet_wrap(.~ISLAND, scales = "free") +
+  theme_void() +
   theme(legend.position = "none")
-
 
 ############################
 ### export as a csv file ###

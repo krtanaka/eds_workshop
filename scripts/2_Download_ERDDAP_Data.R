@@ -26,8 +26,10 @@ endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
 uP = unique(ParamDF$PARAMETER.NAME)[7]; uP
 
-# path to M drive
+# path to M or G drive
+# connect to pifsc VPN
 EDSpath = "G:/Environmental Data Summary_Demo/"
+if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
 
 # Pull Data from ERDDAP for each parameter
 for (iP in 1:length(uP)){
@@ -533,7 +535,7 @@ for (iP in 1:length(uP)){
 
 }#Close each param For
 
-
+# check nc files
 nc = stack("G:/Environmental Data Summary_Demo/DataDownload/Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/Maug_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")
 plot(nc, col = colorRamps::matlab.like(100))
 plot(mean(nc, na.rm = T), col = colorRamps::matlab.like(100))
