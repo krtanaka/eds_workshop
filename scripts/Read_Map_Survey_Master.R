@@ -46,13 +46,15 @@ df$Month = ifelse(df$Month %in% c(1:9), sprintf("%02d", as.numeric(df$Month)), d
 
 ggplot() +
   geom_sf(data = pacific_crop, size = 0.01, fill = "gray", color = "gray") +
-  geom_point(data = df, aes(x = LONGITUDE_LOV, y = LATITUDE_LOV, color = log(n)), alpha = 0.8) +
+  geom_point(data = df, aes(x = LONGITUDE_LOV,
+                            y = LATITUDE_LOV,
+                            color = log(n)), alpha = 0.8) +
   scale_color_viridis_c() +
   # facet_grid(Month ~ Year) +
-  # facet_wrap(~Year) +
-  facet_wrap(~Month) +
+  facet_wrap(~Year) +
+  # facet_wrap(~Month) +
   scale_x_continuous(expand = c(0, 0), "") +
   scale_y_continuous(expand = c(0, 0), "") +
   theme_minimal()
 
-dev.off()
+# dev.off()
