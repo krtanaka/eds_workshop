@@ -13,7 +13,6 @@ library(readr)
 library(ggplot2)
 library(rgeos)
 library(sf)
-library(ggdark)
 library(maps)
 
 load('data/SURVEY MASTER.RData'); df = SURVEY_MASTER
@@ -98,71 +97,3 @@ colnames(df)[2] = "ISLAND.CODE"
 df$ISLAND.CODE = gsub(" ", "_", df$ISLAND.CODE)
 
 # write_csv(df, 'data/Island_Extents.csv')
-
-
-################################
-### compare with Tom's boxes ###
-################################
-BB_ISL = read.csv("M:/Environmental Data Summary/GeographyInputFiles/Island_10km_Grid_Extents_CSV.csv") # previous input file
-
-BB_ISL$REGION = ifelse(BB_ISL$REGION == "AMSM", "SAMOA", BB_ISL$REGION)
-BB_ISL$REGION = ifelse(BB_ISL$REGION == "PRIA", "PRIAs", BB_ISL$REGION)
-
-BB_ISL_sub = subset(BB_ISL, REGION %in% c("MARIAN", "PRIAs", "NWHI", "MHI", "CT", "SAMOA"))
-df_sub = subset(df, REGION %in% c("MARIAN", "PRIAs", "NWHI", "MHI", "CT", "SAMOA"))
-
-df_sub$LEFT_XMIN = ifelse(df_sub$LEFT_XMIN < 0, df_sub$LEFT_XMIN + 360, df_sub$LEFT_XMIN)
-df_sub$RIGHT_XMAX = ifelse(df_sub$RIGHT_XMAX < 0, df_sub$RIGHT_XMAX + 360, df_sub$RIGHT_XMAX)
-
-BB_ISL_sub$LEFT_XMIN = ifelse(BB_ISL_sub$LEFT_XMIN < 0, BB_ISL_sub$LEFT_XMIN + 360, BB_ISL_sub$LEFT_XMIN)
-BB_ISL_sub$RIGHT_XMAX = ifelse(BB_ISL_sub$RIGHT_XMAX < 0, BB_ISL_sub$RIGHT_XMAX + 360, BB_ISL_sub$RIGHT_XMAX)
-
-world <- rnaturalearth::ne_countries(scale = 'small', returnclass = "sp")
-box_cut <- bbox2SP(n = 90, s = -90, w = -20, e = 20, proj4string = world@proj4string)
-world_crop <- gDifference(world, box_cut)
-
-pacific_crop <- world_crop %>%
-  st_as_sf() %>%
-  st_shift_longitude() %>%
-  st_crop(c(
-    xmin = 120,
-    xmax = 206,
-    ymin = -14,
-    ymax = 29))
-
-ggplot() +
-  geom_rect(data = df_sub,
-            mapping = aes(
-              xmin = LEFT_XMIN,
-              xmax = RIGHT_XMAX,
-              ymin = BOTTOM_YMIN,
-              ymax = TOP_YMAX,
-              fill = "Kisei"), alpha = 0.5) +
-  geom_rect(data = BB_ISL_sub,
-            mapping = aes(
-              xmin = LEFT_XMIN,
-              xmax = RIGHT_XMAX,
-              ymin = BOTTOM_YMIN,
-              ymax = TOP_YMAX,
-              fill = "Tom"), alpha = 0.5) +
-  scale_fill_viridis_d("") +
-  facet_wrap(.~ REGION, scales = "free") +
-  annotation_map(map_data("world"))
-
-ggplot() +
-  geom_rect(data = df_sub,
-            mapping = aes(
-              xmin = LEFT_XMIN,
-              xmax = RIGHT_XMAX,
-              ymin = BOTTOM_YMIN,
-              ymax = TOP_YMAX,
-              fill = "Kisei"), alpha = 0.5) +
-  geom_rect(data = BB_ISL_sub,
-            mapping = aes(
-              xmin = LEFT_XMIN,
-              xmax = RIGHT_XMAX,
-              ymin = BOTTOM_YMIN,
-              ymax = TOP_YMAX,
-              fill = "Tom"), alpha = 0.5) +
-  scale_fill_viridis_d("") +
-  annotation_map(map_data("world"))
