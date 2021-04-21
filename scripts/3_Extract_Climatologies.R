@@ -43,6 +43,8 @@ rasterlist = list.files(c(
 # see all rasterarized climatological variables
 strsplit(rasterlist, "/")
 
+head(SM)
+
 ###################
 ### normal loop ###
 ###################
@@ -83,7 +85,7 @@ save(SM_climtologies, file = paste0("outputs/Climatologies_", Sys.Date(), ".RDat
 
 detach("package:raster", unload = TRUE)
 
-SM_climtologies %>% select(ISLAND, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
+clim1= SM_climtologies %>% select(ISLAND, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
   `colnames<-` (c("island", "chl_a_1998_2017")) %>%
   ggplot(aes(x = chl_a_1998_2017, y = island, fill = island, color = island)) +
   geom_joy(scale = 5, alpha = 0.8, size = 0.1, bandwidth = 0.03) +
@@ -93,55 +95,15 @@ SM_climtologies %>% select(ISLAND, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017
   scale_color_viridis_d("") +
   theme(legend.position = "none")
 
-SM_climtologies %>% select(ISLAND, SST_CRW_Clim_CumMean_1985_2018) %>%
+clim2 = SM_climtologies %>% select(ISLAND, SST_CRW_Clim_CumMean_1985_2018) %>%
   `colnames<-` (c("island", "sst_1985_2018")) %>%
   ggplot(aes(x = sst_1985_2018, y = island, fill = island, color = island)) +
-  geom_joy(scale = 5, alpha = 0.8, size = 0, bandwidth = 0.5) +
+  geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.5) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
   scale_fill_viridis_d("") +
   scale_color_viridis_d("") +
   theme(legend.position = "none")
 
-# #######################
-# ### paralleled loop ###
-# #######################
-#
-# library(doParallel)
-#
-# # find out number of available cores
-# cores = detectCores()/2
-# registerDoParallel(cores = cores)
-#
-# ptm <- proc.time()
-# r = foreach(raster_i = 1:length(rasterlist), .combine = cbind, .packages = c('raster')) %dopar% {
-#
-#   # raster_i = 1
-#
-#   rasname_full = rasterlist[raster_i]
-#   rasname_sp = strsplit(rasname_full, "/")[[1]]
-#   rasname = rasname_sp[length(rasname_sp)]
-#   rasname = gsub(rasname, pattern = "-", replacement = ".")
-#   rasname = gsub(rasname, pattern = "_AllIslands.nc", replacement = "")
-#
-#   this_r = raster(rasterlist[raster_i])
-#
-#   if (this_r@extent@xmin < 0) this_r = rotate(this_r)
-#
-#   # map_raster = as.data.frame(rasterToPoints(this_r))
-#   # plot(map_raster$x, map_raster$y, pch = 20, col = 2)
-#   # points(map_sm$LONGITUDE_LOV, map_sm$LATITUDE_LOV, col = 4, pch = 2)
-#   # maps::map(add = T)
-#
-#   crs(SM_sp) = crs(this_r)
-#
-#   this_Ex = ExpandingExtract(this_r, SM_sp, Dists = c(0, 50, 100, 1000, 2000, 4000, 8000, 10000))
-#
-#   colnames(this_Ex)[1] = rasname
-#   this_Ex[1]
-#
-# }
-# SM = cbind(SM, r)
-# readr::write_csv(SM, "outputs/Survey_Master_Climatologies.csv")
-# proc.time() - ptm
-#
+library(patchwork)
+clim1 + clim2

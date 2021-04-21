@@ -49,7 +49,7 @@ paramdir = "M:/Environmental Data Summary/DataDownload/"
 parameters = list.files(path = paramdir, full.names = F); parameters # list all variables
 parameters = c(
   # "Degree_Heating_Weeks",
-  "SST_CRW_Daily",
+  # "SST_CRW_Daily",
   # "kdPAR_VIIRS_Weekly",
   "Chlorophyll_A_ESAOCCCI_8Day"
   # "Kd490_ESAOCCCI_8Day",
@@ -83,8 +83,9 @@ print(paste("Dropping",
 
 SM = subset(SM, DATA_ISL != "NONE_ASSIGNED")
 
-# use smaller data frame to debug
-SM = SM[sample(1:nrow(SM), 50, replace = FALSE),]
+# use smaller data frame to debugs
+set.seed(444)
+SM = SM[sample(1:nrow(SM), 30, replace = FALSE),]
 
 # list of islands
 unique_islands = sort(unique(SM$DATA_ISL)); unique_islands
@@ -367,23 +368,19 @@ end_time - start_time
 
 SM[SM == -9991] <- NA
 
+#make it easier to read...
+colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
+
 library(visdat)
-vis_dat(SM[,c(11:115)])
-vis_miss(SM[,c(111:115)])
+vis_miss(SM[,c(11:dim(SM)[2])])
 
-SM %>%
-  ggplot(aes(x = mean_SST_CRW_Daily_MO03, y = ISLAND , fill = REGION, color = REGION)) +
-  geom_joy(scale = 3, alpha = 0.8, size = 0.1, bandwidth = 0.5) +
-  ylab(NULL) +
-  ggdark::dark_theme_bw() +
-  scale_fill_viridis_d() +
-  scale_color_viridis_d() +
-  theme(legend.position = "bottom")
+r = cor(SM[,c(11:38)], use = "complete.obs")
+corrplot(r, method = "shade", cl.lim = c(min(r), 1), is.corr = F)
 
+# load EDS result with full REA data
 load('outputs/Timeseries_2021-02-27.Rdata')
 SM[SM == -9991] <- NA
 
-vis_dat(SM[,c(52:380)], warn_large_data = F)
 vis_miss(SM[,c(52:380)], warn_large_data = F)
 
 detach("package:plyr", unload = TRUE)

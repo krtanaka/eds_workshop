@@ -14,11 +14,11 @@ cache_setup(temp_dir = TRUE)
 cache_delete_all()
 closeAllConnections()
 
-# Islands
+# load your bounding boxes (Islands)
 Ibbox = read.csv("data/Island_Extents.csv", stringsAsFactors = F) # Updated Bounding boxes 2021
 uI = unique(Ibbox$ISLAND.CODE)[27]; uI
 
-# Parameter and Time Series Summary Definitions
+# select ERDDAP data
 ParamDF = read.csv("data/EDS_parameters.csv", stringsAsFactors = F)
 ParamDF = subset(ParamDF, DOWNLOAD == "YES")
 startwith = 1
@@ -26,7 +26,7 @@ endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
 uP = unique(ParamDF$PARAMETER.NAME)[7]; uP
 
-# path to M or G drive
+# path to M or G drive to store ERDDAP nc files
 # connect to pifsc VPN
 EDSpath = "G:/Environmental Data Summary_Demo/"
 if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
@@ -535,7 +535,7 @@ for (iP in 1:length(uP)){
 
 }#Close each param For
 
-# check nc files
+# check downloaded ERDDAP nc files
 nc = stack("G:/Environmental Data Summary_Demo/DataDownload/Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/Maug_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")
 plot(nc, col = colorRamps::matlab.like(100))
 plot(mean(nc, na.rm = T), col = colorRamps::matlab.like(100))
