@@ -1,7 +1,7 @@
 #########################################################################
 ### R scripts to attach timeseries variables to "Survey_Master" file  ###
 ### Originally developed & conceptualized by T.A.Oliver               ###
-### Revised & Edited & Maintained by K.R.Tanaka & T.A.Oliver          ###
+### Revised & Maintained by K.R.Tanaka & T.A.Oliver                   ###
 #########################################################################
 
 rm(list = ls())
@@ -374,11 +374,16 @@ colnames(SM) = gsub("_SST_CRW_Daily_", "_sst_", colnames(SM))
 colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
 
 library(visdat)
-vis_miss(SM[,c(11:dim(SM)[2])])
+vis_miss(SM[,c(11:66)])
+vis_miss(SM[,c(67:dim(SM)[2])])
+
 
 library(corrplot)
-r = cor(SM[,c(11:dim(SM)[2])], use = "complete.obs")
-corrplot(r, method = "shade", cl.lim = c(min(r), 1), is.corr = F, tl.pos = "n")
+sst = cor(SM[,c(11:66)], use = "complete.obs")
+chla = cor(SM[,c(67:dim(SM)[2])], use = "complete.obs")
+
+corrplot(sst, method = "shade", cl.lim = c(min(sst), 1), is.corr = F, tl.pos = "n")
+corrplot(chla, method = "shade", cl.lim = c(min(chla), 1), is.corr = F, tl.pos = "n")
 
 # load EDS result with full REA data
 load('outputs/Timeseries_2021-02-27.Rdata')
