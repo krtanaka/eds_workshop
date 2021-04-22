@@ -16,7 +16,7 @@ closeAllConnections()
 
 # load your bounding boxes (Islands)
 Ibbox = read.csv("data/Island_Extents.csv", stringsAsFactors = F) # Updated Bounding boxes 2021
-uI = unique(Ibbox$ISLAND.CODE)[27]; uI
+uI = unique(Ibbox$ISLAND.CODE)[13]; uI
 
 # select ERDDAP data
 ParamDF = read.csv("data/EDS_parameters.csv", stringsAsFactors = F)
@@ -24,11 +24,14 @@ ParamDF = subset(ParamDF, DOWNLOAD == "YES")
 startwith = 1
 endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
-uP = unique(ParamDF$PARAMETER.NAME)[7]; uP
+uP = unique(ParamDF$PARAMETER.NAME)[c(1:2,6:7)]; uP # static and dynamic SST and chl_a
 
 # path to M or G drive to store ERDDAP nc files
-# connect to pifsc VPN
-EDSpath = "G:/Environmental Data Summary_Demo/"
+# connect to NOAA PIFSC VPN
+# if you do not have NOAA VPN save them on your desktop
+EDSpath = "G:/Environmental Data Summary_Demo/" # w/ VPN & G/M Drives
+EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "Environmental Data Summary_Demo/") # w/o VPN
+
 if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
 
 # Pull Data from ERDDAP for each parameter
@@ -122,9 +125,9 @@ for (iP in 1:length(uP)){
       r = raster(ILnc[1])
       crs(r) = "+proj=longlat +datum=WGS84"
 
-      print(paste0("loaded file ",1," of ",length(ILnc)))
+      print(paste0("loaded file ", 1, " of ",length(ILnc)))
 
-      for(rasi in 2:length(ILnc)){
+      for(rasi in 1:length(ILnc)){
 
         newr = raster(ILnc[rasi])
         crs(newr) = "+proj=longlat +datum=WGS84"
@@ -217,7 +220,7 @@ for (iP in 1:length(uP)){
                        latitude = thisisland[,c("BOTTOM_YMIN","TOP_YMAX")],
                        store = memory())
 
-      singlestep = nrow(testIP$data)
+      singlestep = nrow(testIP$data)/10
 
       Nblocks = ceiling((singlestep * thisp$TIMESTEPS) / thisp$BLOCKSIZE); Nblocks
 
@@ -536,6 +539,35 @@ for (iP in 1:length(uP)){
 }#Close each param For
 
 # check downloaded ERDDAP nc files
-nc = stack("G:/Environmental Data Summary_Demo/DataDownload/Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/Maug_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")
-plot(nc, col = colorRamps::matlab.like(100))
-plot(mean(nc, na.rm = T), col = colorRamps::matlab.like(100))
+# static and dynamic files
+
+path = "G:/Environmental Data Summary_Demo/DataDownload/"
+path = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
+
+dev.off()
+
+# climatologies
+plot(raster(paste0(path, "Chlorophyll_A_ESAOCCCI_Clim/Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017_AllIslands.nc")))
+plot(raster(paste0(path, "SST_CRW_Clim/SST_CRW_Clim_CumMean_1985_2018_AllIslands.nc")))
+
+# time steps
+plot(stack(paste0(path, "Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/", uI, "_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")))
+plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/", uI, "_SST_CRW_Daily_1985-01-01_2019-12-31.nc")))
+
+# summary statistics
+par(mfrow = c(3,3))
+
+plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/mean/", uI, "_SST_CRW_Daily_mean_1985-01-01_2019-12-31.nc")), main = "mean")
+
+plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/mean_annual_range/", uI, "_SST_CRW_Daily_mean_annual_range_1985-01-01_2019-12-31.nc")), main = "mean_annual_range")
+
+plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/mean_biweekly_range/", uI, "_SST_CRW_Daily_mean_biweekly_range_1985-01-01_2019-12-31.nc")), main = "mean_biweekly_range")
+
+plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/mean_monthly_range/", uI, "_SST_CRW_Daily_mean_monthly_range_1985-01-01_2019-12-31.nc")), main = "mean_monthly_range")
+
+plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/q05/", uI, "_SST_CRW_Daily_q05_1985-01-01_2019-12-31.nc")), main = "q05")
+
+plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/q95/", uI, "_SST_CRW_Daily_q95_1985-01-01_2019-12-31.nc")), main = "q95")
+
+plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/sd/", uI, "_SST_CRW_Daily_sd_1985-01-01_2019-12-31.nc")), main = "sd")
+

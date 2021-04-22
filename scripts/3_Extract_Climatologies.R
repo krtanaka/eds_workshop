@@ -21,7 +21,7 @@ source("scripts/HelperCode/ExpandingExtract.R")
 # import survey data, SM = master REA survey file, subset if necessary
 load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER
 table(SM$REGION)
-SM = subset(SM, REGION %in% c("MHI", "NWHI"))
+SM = subset(SM, ISLAND %in% c("Hawaii"))
 
 SM$LONGITUDE_LOV = ifelse(SM$LONGITUDE_LOV < 0, SM$LONGITUDE_LOV + 360, SM$LONGITUDE_LOV)
 
@@ -34,8 +34,8 @@ coordinates(SM_sp) = ~LONGITUDE_LOV + LATITUDE_LOV
 rasterlist = list.files(c(
   # "M:/Environmental Data Summary/DataDownload/Bathymetry_ETOPO1/",
   # "M:/Environmental Data Summary/DataDownload/Bathymetry_SRTM15/",
-  "M:/Environmental Data Summary/DataDownload/Chlorophyll_A_ESAOCCCI_Clim/",
-  "M:/Environmental Data Summary/DataDownload/SST_CRW_Clim/"),
+  paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/Chlorophyll_A_ESAOCCCI_Clim/"),
+  paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/SST_CRW_Clim/")),
   recursive = T,
   pattern = "_AllIslands.nc",
   full.names = T)
@@ -85,20 +85,27 @@ save(SM_climtologies, file = paste0("outputs/Climatologies_", Sys.Date(), ".RDat
 
 detach("package:raster", unload = TRUE)
 
-clim1= SM_climtologies %>% select(ISLAND, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
-  `colnames<-` (c("island", "chl_a_1998_2017")) %>%
-  ggplot(aes(x = chl_a_1998_2017, y = island, fill = island, color = island)) +
-  geom_joy(scale = 5, alpha = 0.8, size = 0.1, bandwidth = 0.03) +
+good_sites = SM_climtologies %>% group_by(SITE) %>% dplyr::summarise(n = n()) %>% subset(n > 2)
+good_sites = unique(good_sites$SITE)
+
+clim1 = SM_climtologies %>%
+  subset(SITE %in% good_sites) %>%
+  select(SITE, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
+  `colnames<-` (c("Site", "chl_a_1998_2017")) %>%
+  ggplot(aes(x = chl_a_1998_2017, y = Site, fill = Site, color = Site)) +
+  geom_joy(scale = 2, alpha = 0.8, size = 0.1, bandwidth = 0.05) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
   scale_fill_viridis_d("") +
   scale_color_viridis_d("") +
   theme(legend.position = "none")
 
-clim2 = SM_climtologies %>% select(ISLAND, SST_CRW_Clim_CumMean_1985_2018) %>%
-  `colnames<-` (c("island", "sst_1985_2018")) %>%
-  ggplot(aes(x = sst_1985_2018, y = island, fill = island, color = island)) +
-  geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.5) +
+clim2 = SM_climtologies %>%
+  subset(SITE %in% good_sites) %>%
+  select(SITE, SST_CRW_Clim_CumMean_1985_2018) %>%
+  `colnames<-` (c("Site", "sst_1985_2018")) %>%
+  ggplot(aes(x = sst_1985_2018, y = Site, fill = Site, color = Site)) +
+  geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.05) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
   scale_fill_viridis_d("") +

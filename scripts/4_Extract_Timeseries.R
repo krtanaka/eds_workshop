@@ -21,7 +21,7 @@ source("scripts/HelperCode/EDS_HelperFunctions.R")
 ###########################################################################
 ### read survey data points, assign distinct lat, lon, and time columns ###
 ###########################################################################
-load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER
+load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER %>% subset(ISLAND == "Hawaii")
 
 SM$ISLAND = gsub(" ", "_", SM$ISLAND)
 
@@ -46,10 +46,11 @@ BB_ISL = read.csv("data/Island_Extents.csv"); unique(BB_ISL$ISLAND.CODE)
 ### See folder names in M:/Environmental Data Summary/DataDownload/ ###
 #######################################################################
 paramdir = "M:/Environmental Data Summary/DataDownload/"
+paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
 parameters = list.files(path = paramdir, full.names = F); parameters # list all variables
 parameters = c(
   # "Degree_Heating_Weeks",
-  # "SST_CRW_Daily",
+  "SST_CRW_Daily",
   # "kdPAR_VIIRS_Weekly",
   "Chlorophyll_A_ESAOCCCI_8Day"
   # "Kd490_ESAOCCCI_8Day",
@@ -368,14 +369,16 @@ end_time - start_time
 
 SM[SM == -9991] <- NA
 
-#make it easier to read...
+#make columns easier to read...
+colnames(SM) = gsub("_SST_CRW_Daily_", "_sst_", colnames(SM))
 colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
 
 library(visdat)
 vis_miss(SM[,c(11:dim(SM)[2])])
 
-r = cor(SM[,c(11:38)], use = "complete.obs")
-corrplot(r, method = "shade", cl.lim = c(min(r), 1), is.corr = F)
+library(corrplot)
+r = cor(SM[,c(11:dim(SM)[2])], use = "complete.obs")
+corrplot(r, method = "shade", cl.lim = c(min(r), 1), is.corr = F, tl.pos = "n")
 
 # load EDS result with full REA data
 load('outputs/Timeseries_2021-02-27.Rdata')
