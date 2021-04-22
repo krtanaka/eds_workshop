@@ -1,7 +1,7 @@
 ################################################################
 ### Scripts to create bounding boxes around surveyed islands ###
 ### Originally developed & conceptualized by T.A.Oliver      ###
-### Revised & Edited & Maintained by K.R.Tanaka & T.A.Oliver ###
+### Revised & Maintained by K.R.Tanaka & T.A.Oliver          ###
 ################################################################
 
 rm(list = ls())
