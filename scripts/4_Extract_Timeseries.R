@@ -11,6 +11,14 @@ library(raster)
 library(lubridate)
 library(ncdf4)
 library(dplyr)
+library(ggplot2)
+library(patchwork)
+library(colorRamps)
+library(visdat)
+library(corrplot)
+library(marmap)
+library(ggjoy)
+library(ggrepel)
 
 dir = paste0(getwd(), "/")
 
@@ -51,9 +59,9 @@ paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary
 parameters = list.files(path = paramdir, full.names = F); parameters # list all variables
 parameters = c(
   # "Degree_Heating_Weeks",
-  "SST_CRW_Daily"
+  "SST_CRW_Daily",
   # "kdPAR_VIIRS_Weekly",
-  # "Chlorophyll_A_ESAOCCCI_8Day"
+  "Chlorophyll_A_ESAOCCCI_8Day"
   # "Kd490_ESAOCCCI_8Day",
   # "PAR_MODIS_Daily"
 ); parameters # select only dynamic variables
@@ -86,9 +94,8 @@ print(paste("Dropping",
 SM = subset(SM, DATA_ISL != "NONE_ASSIGNED")
 
 # use smaller data frame to debugs
-set.seed(444)
-SM = SM[sample(1:nrow(SM), 500, replace = FALSE),]
-SM = subset(SM, ISLAND == "Hawaii")
+# set.seed(444)
+# SM = SM[sample(1:nrow(SM), 50, replace = FALSE),]
 
 # list of islands
 unique_islands = sort(unique(SM$DATA_ISL)); unique_islands
@@ -375,12 +382,9 @@ SM[SM == -9991] <- NA
 colnames(SM) = gsub("_SST_CRW_Daily_", "_sst_", colnames(SM))
 colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
 
-library(visdat)
 vis_miss(SM[,c(11:66)])
 vis_miss(SM[,c(67:dim(SM)[2])])
 
-
-library(corrplot)
 sst = cor(SM[,c(11:66)], use = "complete.obs")
 chla = cor(SM[,c(67:dim(SM)[2])], use = "complete.obs")
 
@@ -391,8 +395,12 @@ detach("package:plyr", unload = TRUE)
 n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 2)
 good_sites = n$SITE
 
-library(marmap)
-b = getNOAA.bathy(lon1 = -156.2, lon2 = -154.8, lat1 = 18.8, lat2 = 20.4, resolution = 1)
+b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
+                  lon2 = max(pretty(SM$LON)),
+                  lat1 = min(pretty(SM$LAT)),
+                  lat2 = max(pretty(SM$LAT)),
+                  resolution = 1)
+
 b = fortify.bathy(b)
 
 sd = SM %>%
@@ -400,48 +408,42 @@ sd = SM %>%
   group_by(SITE) %>%
   mutate(sd = median(sd_sst_YR10)) %>%
   ggplot(aes(x = sd_sst_YR10, y = SITE , fill = sd, color = sd)) +
-  geom_joy(scale = 3, alpha = 0.8, size = 0.01, bandwidth = 0.05) +
+  geom_joy(scale = 3, alpha = 0.8, size = 0.01) +
   ylab(NULL) +
-  xlab("Standard Deviation - past 10 years of daily SST") +
   ggdark::dark_theme_minimal() +
   scale_fill_gradientn(colours = matlab.like(length(good_sites)), "") +
   scale_color_gradientn(colours = matlab.like(length(good_sites)), "") +
-  theme(legend.position = "none") +
-  ggtitle("Standard Deviation of daily SST over past 10 years\nindividually computed for every in situ observation\nData:Daily SST, Coral Reef Watch, 1985-present")
+  theme(legend.position = "none")
 
 map = SM %>%
   subset(SITE %in% good_sites) %>%
   group_by(SITE) %>%
   summarise(lon = mean(LON),
             lat = mean(LAT),
-            sd = median(sd_sst_YR10))
-
-map = ggplot() +
+            sd = median(sd_sst_YR10)) %>%
+  ggplot(aes(x = lon, y = lat)) +
+  geom_point(alpha = 0.3) +
+  geom_label_repel(aes(label = SITE),
+                   label.size = NA,
+                   label.padding = 0.1,
+                   na.rm = TRUE,
+                   fill = alpha(c("white"), 1)) +
   geom_contour(data = b,
                aes(x = x, y = y, z = z),
-               breaks = seq(-8000, 0, by = 100),
+               breaks = seq(-8000, 0, by = 500),
                size = c(0.1),
                alpha = 0.8,
-               colour = topo.colors(13945)) +
-  geom_point(data = map, aes(x = lon, y = lat , color = "red"), size = 3) +
-  ggdark::dark_theme_minimal() +
+               colour = topo.colors(2910)) +
+  ggdark::dark_theme_void() +
   theme(legend.position = "none") +
-  coord_fixed() +
-  ylab(NULL) +
-  xlab(NULL) +
-  ggtitle("Kisei Tanaka, NOAA/PIFSC\nHawaii Survey Sites (2002-2019)")
+  coord_fixed()
 
-library(patchwork)
-
-pdf('/Users/Kisei.Tanaka/Desktop/krt.pdf', height = 8, width = 13)
 map + sd
-dev.off()
 
 # load EDS result with full REA data
 load('outputs/Timeseries_2021-02-27.Rdata')
 SM[SM == -9991] <- NA
 
-detach("package:plyr", unload = TRUE)
 n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 10)
 good_sites = n$SITE
 
@@ -457,24 +459,8 @@ SM %>%
   scale_color_gradientn(colours = matlab.like(length(good_sites))) +
   theme(legend.position = "none")
 
-
-SM %>%
-  subset(SITE %in% good_sites) %>%
-  group_by(LON, LAT, SITE, ISLAND) %>%
-  summarise(n = n()) %>%
-  ggplot(aes(x = LON, y = LAT , fill = SITE, color = SITE, label = SITE)) +
-  geom_point() +
- ggrepel:: geom_text_repel( size = 3,
-                  box.padding = unit(0.1, 'lines'), force = 0.5) +
-  facet_wrap(.~ISLAND, scales = "free")
-  ggdark::dark_theme_minimal()
-
-
-
-
 vis_miss(SM[,c(52:380)], warn_large_data = F)
 
-detach("package:plyr", unload = TRUE)
 n = SM %>% group_by(ISLAND) %>% summarise(n = n()) %>% subset(n > 100)
 big_islands = n$ISLAND
 
