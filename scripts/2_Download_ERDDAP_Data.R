@@ -24,7 +24,7 @@ ParamDF = subset(ParamDF, DOWNLOAD == "YES")
 startwith = 1
 endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
-uP = unique(ParamDF$PARAMETER.NAME)[c(1:2,6:7)]; uP # static and dynamic SST and chl_a
+uP = unique(ParamDF$PARAMETER.NAME)[c(4, 9, 3, 10:11)]; uP # static and dynamic SST and chl_a
 
 # path to M or G drive to store ERDDAP nc files
 # connect to NOAA PIFSC VPN
@@ -552,22 +552,17 @@ plot(raster(paste0(path, "SST_CRW_Clim/SST_CRW_Clim_CumMean_1985_2018_AllIslands
 
 # time steps
 plot(stack(paste0(path, "Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/", uI, "_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")))
-plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/", uI, "_SST_CRW_Daily_1985-01-01_2019-12-31.nc")))
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/", uI, "_SST_CRW_Monthly_1985-01-31_2021-03-31.nc")))
 
 # summary statistics
-par(mfrow = c(3,3))
+par(mfrow = c(2,3))
 
-plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/mean/", uI, "_SST_CRW_Daily_mean_1985-01-01_2019-12-31.nc")), main = "mean")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean/", uI, "_SST_CRW_Monthly_mean_1985-01-31_2021-03-31.nc")), main = "mean")
 
-plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/mean_annual_range/", uI, "_SST_CRW_Daily_mean_annual_range_1985-01-01_2019-12-31.nc")), main = "mean_annual_range")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean_annual_range/", uI, "_SST_CRW_Monthly_mean_annual_range_1985-01-31_2021-03-31.nc")), main = "mean_annual_range")
 
-plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/mean_biweekly_range/", uI, "_SST_CRW_Daily_mean_biweekly_range_1985-01-01_2019-12-31.nc")), main = "mean_biweekly_range")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q05/", uI, "_SST_CRW_Monthly_q05_1985-01-31_2021-03-31.nc")), main = "q05")
 
-plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/mean_monthly_range/", uI, "_SST_CRW_Daily_mean_monthly_range_1985-01-01_2019-12-31.nc")), main = "mean_monthly_range")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q95/", uI, "_SST_CRW_Monthly_q95_1985-01-31_2021-03-31.nc")), main = "q95")
 
-plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/q05/", uI, "_SST_CRW_Daily_q05_1985-01-01_2019-12-31.nc")), main = "q05")
-
-plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/q95/", uI, "_SST_CRW_Daily_q95_1985-01-01_2019-12-31.nc")), main = "q95")
-
-plot(stack(paste0(path, "SST_CRW_Daily/Island_Level_Data/sd/", uI, "_SST_CRW_Daily_sd_1985-01-01_2019-12-31.nc")), main = "sd")
-
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/sd/", uI, "_SST_CRW_Monthly_sd_1985-01-31_2021-03-31.nc")), main = "sd")
