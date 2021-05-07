@@ -10,6 +10,7 @@ library(spatial)
 library(raster)
 library(lubridate)
 library(ncdf4)
+library(dplyr)
 
 dir = paste0(getwd(), "/")
 
@@ -406,7 +407,7 @@ sd = SM %>%
   scale_fill_gradientn(colours = matlab.like(length(good_sites)), "") +
   scale_color_gradientn(colours = matlab.like(length(good_sites)), "") +
   theme(legend.position = "none") +
-  ggtitle("Standard Deviation of daily SST over past 10 years\nindividually computed for every indepedent observation")
+  ggtitle("Standard Deviation of daily SST over past 10 years\nindividually computed for every in situ observation\nData:Daily SST, Coral Reef Watch, 1985-present")
 
 map = SM %>%
   subset(SITE %in% good_sites) %>%
@@ -420,7 +421,7 @@ map = ggplot() +
                aes(x = x, y = y, z = z),
                breaks = seq(-8000, 0, by = 100),
                size = c(0.1),
-               alpha = 0.5,
+               alpha = 0.8,
                colour = topo.colors(13945)) +
   geom_point(data = map, aes(x = lon, y = lat , color = "red"), size = 3) +
   ggdark::dark_theme_minimal() +
@@ -428,7 +429,7 @@ map = ggplot() +
   coord_fixed() +
   ylab(NULL) +
   xlab(NULL) +
-  ggtitle("Hawaii Survey Sites (2002-2019)")
+  ggtitle("Kisei Tanaka, NOAA/PIFSC\nHawaii Survey Sites (2002-2019)")
 
 library(patchwork)
 
