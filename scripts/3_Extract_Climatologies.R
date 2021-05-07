@@ -92,25 +92,25 @@ clim1 = SM_climtologies %>%
   subset(SITE %in% good_sites) %>%
   select(SITE, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
   `colnames<-` (c("Site", "chl_a_1998_2017")) %>%
-  ggplot(aes(x = chl_a_1998_2017, y = Site, fill = Site, color = Site)) +
+  ggplot(aes(x = chl_a_1998_2017, y = Site, fill = chl_a_1998_2017, color = chl_a_1998_2017)) +
   geom_joy(scale = 2, alpha = 0.8, size = 0.1, bandwidth = 0.05) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
-  scale_fill_viridis_d("") +
-  scale_color_viridis_d("") +
-  theme(legend.position = "none")
+  scale_fill_viridis_c("") +
+  scale_color_viridis_c("") +
+  theme(legend.position = "right")
 
 clim2 = SM_climtologies %>%
   subset(SITE %in% good_sites) %>%
   select(SITE, SST_CRW_Clim_CumMean_1985_2018) %>%
   `colnames<-` (c("Site", "sst_1985_2018")) %>%
-  ggplot(aes(x = sst_1985_2018, y = Site, fill = Site, color = Site)) +
+  ggplot(aes(x = sst_1985_2018, y = Site, fill = sst_1985_2018, color = sst_1985_2018)) +
   geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.05) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
-  scale_fill_viridis_d("") +
-  scale_color_viridis_d("") +
-  theme(legend.position = "none")
+  scale_fill_gradientn(colors =  colorRamps::matlab.like(100), "") +
+  scale_color_gradientn(colors =  colorRamps::matlab.like(100), "") +
+  theme(legend.position = "right")
 
 library(patchwork)
 clim1 + clim2
