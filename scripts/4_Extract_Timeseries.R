@@ -59,7 +59,8 @@ paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary
 parameters = list.files(path = paramdir, full.names = F); parameters # list all variables
 parameters = c(
   # "Degree_Heating_Weeks",
-  "SST_CRW_Daily",
+  # "SST_CRW_Daily",
+  "SST_CRW_Monthly",
   # "kdPAR_VIIRS_Weekly",
   "Chlorophyll_A_ESAOCCCI_8Day"
   # "Kd490_ESAOCCCI_8Day",
@@ -355,15 +356,15 @@ for(parameter_i in 1:length(parameters)){
 
           }#END if
 
-      }#END Loop over this island's points (for 1:length(SM_i))
+        }#END Loop over this island's points (for 1:length(SM_i))
 
-      print(paste(unique_islands[island_i],
-                  paramsum.name, "Done.",
-                  island_i, "of",
-                  length(unique_islands), "islands. Completed",
-                  sumpt_i, " points..."))
+        print(paste(unique_islands[island_i],
+                    paramsum.name, "Done.",
+                    island_i, "of",
+                    length(unique_islands), "islands. Completed",
+                    sumpt_i, " points..."))
 
-    }#END Loop over each summary function  (for 1:length(paramsum))
+      }#END Loop over each summary function  (for 1:length(paramsum))
 
     }
 
@@ -379,7 +380,7 @@ end_time - start_time
 SM[SM == -9991] <- NA
 
 #make columns easier to read...
-colnames(SM) = gsub("_SST_CRW_Daily_", "_sst_", colnames(SM))
+colnames(SM) = gsub("_SST_CRW_Monthly_", "_sst_", colnames(SM))
 colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
 
 vis_miss(SM[,c(11:66)])
@@ -422,19 +423,19 @@ map = SM %>%
             lat = mean(LAT),
             sd = median(sd_sst_YR10)) %>%
   ggplot(aes(x = lon, y = lat)) +
-  geom_point(alpha = 0.3) +
-  geom_label_repel(aes(label = SITE),
-                   label.size = NA,
-                   label.padding = 0.1,
-                   na.rm = TRUE,
-                   fill = alpha(c("white"), 1)) +
+  geom_point(alpha = 0.3, size = 5) +
+  # geom_label_repel(aes(label = SITE),
+  #                  label.size = NA,
+  #                  label.padding = 0.1,
+  #                  na.rm = TRUE,
+  #                  fill = alpha(c("white"), 1)) +
   geom_contour(data = b,
                aes(x = x, y = y, z = z),
                breaks = seq(-8000, 0, by = 500),
                size = c(0.1),
                alpha = 0.8,
                colour = topo.colors(2910)) +
-  ggdark::dark_theme_void() +
+  ggdark::dark_theme_minimal() +
   theme(legend.position = "none") +
   coord_fixed()
 
@@ -466,10 +467,12 @@ big_islands = n$ISLAND
 
 SM %>%
   subset(ISLAND %in% big_islands) %>%
-  ggplot(aes(x = sd_SST_CRW_Daily_YR10, y = ISLAND , fill = REGION, color = REGION)) +
+  group_by(ISLAND) %>%
+  mutate(sd = median(sd_SST_CRW_Daily_YR01, na.rm = T)) %>%
+  ggplot(aes(x = sd_SST_CRW_Daily_YR10, y = ISLAND , fill = sd, color = sd)) +
   geom_joy(scale = 5, alpha = 0.8, size = 0.01, bandwidth = 0.1) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
-  scale_fill_viridis_d("") +
-  scale_color_viridis_d("") +
-  theme(legend.position = "bottom")
+  scale_fill_gradientn(colours = matlab.like(length(big_islands))) +
+  scale_color_gradientn(colours = matlab.like(length(big_islands))) +
+  theme(legend.position = "right")

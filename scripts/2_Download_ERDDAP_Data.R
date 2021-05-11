@@ -24,7 +24,7 @@ ParamDF = subset(ParamDF, DOWNLOAD == "YES")
 startwith = 1
 endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
-uP = unique(ParamDF$PARAMETER.NAME)[c(4, 9, 3, 10:11)]; uP # static and dynamic SST and chl_a
+uP = unique(ParamDF$PARAMETER.NAME)[c(4, 9, 3, 11)]; uP # static and dynamic SST and chl_a
 
 # path to M or G drive to store ERDDAP nc files
 # connect to NOAA PIFSC VPN
