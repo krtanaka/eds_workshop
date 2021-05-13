@@ -51,11 +51,10 @@ dim(SM)
 ##################################
 BB_ISL = read.csv("data/Island_Extents.csv"); unique(BB_ISL$ISLAND.CODE)
 
-#######################################################################
-### Build list of target environmental variables                    ###
-#######################################################################
+####################################################
+### Build list of target environmental variables ###
+####################################################
 paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
-parameters = list.files(path = paramdir, full.names = F); parameters # list all variables
 parameters = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_8Day"); parameters # select only dynamic variables
 
 #########################################
@@ -84,10 +83,6 @@ print(paste("Dropping",
             "entered points, as outside Geographic Scope"))
 
 SM = subset(SM, DATA_ISL != "NONE_ASSIGNED")
-
-# use smaller data frame to debugs
-# set.seed(444)
-# SM = SM[sample(1:nrow(SM), 50, replace = FALSE),]
 
 # list of islands
 unique_islands = sort(unique(SM$DATA_ISL)); unique_islands
@@ -164,7 +159,6 @@ for(parameter_i in 1:length(parameters)){
       next()
 
     } else {
-
 
       # Count NA in var array (will use to solve NA issues)
       naP_xy = aaply(rawvar,
@@ -259,26 +253,14 @@ for(parameter_i in 1:length(parameters)){
       }
 
       #TimeSeries Pull Indices
-      # ijk$t_01mo = ijk$t_k - (30/tstep-1)
       ijk$t_03mo = ijk$t_k - (90/tstep-1)
       ijk$t_01yr = round(ijk$t_k-(1*365.25/tstep-1))
-      ijk$t_03yr = round(ijk$t_k-(3*365.25/tstep-1))
-      ijk$t_05yr = round(ijk$t_k-(5*365.25/tstep-1))
-      ijk$t_10yr = round(ijk$t_k-(10*365.25/tstep-1))
 
       ijk[,c("t_k",
-             # "t_01mo",
              "t_03mo",
-             "t_01yr",
-             "t_03yr",
-             "t_05yr",
-             "t_10yr")][which(ijk[,c("t_k",
-                                     # "t_01mo",
+             "t_01yr")][which(ijk[,c("t_k",
                                      "t_03mo",
-                                     "t_01yr",
-                                     "t_03yr",
-                                     "t_05yr",
-                                     "t_10yr")] < 1, arr.ind = T)] = 1
+                                     "t_01yr")] < 1, arr.ind = T)] = 1
 
       #Apply Summaries to Timeseries
       for(sum_i in 1:length(paramsum)){
@@ -289,14 +271,8 @@ for(parameter_i in 1:length(parameters)){
 
         if(!paramsum.name %in% substr(names(SM), 1, nchar(paramsum.name))){
 
-          # eval(parse(text = paste0("SM$",paramsum.name,"_MO01=-9991")))
           eval(parse(text = paste0("SM$",paramsum.name,"_MO03=-9991")))
           eval(parse(text = paste0("SM$",paramsum.name,"_YR01=-9991")))
-          eval(parse(text = paste0("SM$",paramsum.name,"_YR03=-9991")))
-          eval(parse(text = paste0("SM$",paramsum.name,"_YR05=-9991")))
-          eval(parse(text = paste0("SM$",paramsum.name,"_YR10=-9991")))
-          eval(parse(text = paste0("SM$",paramsum.name,"_YR10YR01=-9991")))
-          eval(parse(text = paste0("SM$",paramsum.name,"_ALLB4=-9991")))
 
         }
 
@@ -305,47 +281,13 @@ for(parameter_i in 1:length(parameters)){
 
           # sumpt_i = 1
 
-          # ts_01mo = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_01mo[sumpt_i]:ijk$t_k[sumpt_i]]
           ts_03mo = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_03mo[sumpt_i]:ijk$t_k[sumpt_i]]
           ts_01yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_01yr[sumpt_i]:ijk$t_k[sumpt_i]]
-          ts_03yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_03yr[sumpt_i]:ijk$t_k[sumpt_i]]
-          ts_05yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_05yr[sumpt_i]:ijk$t_k[sumpt_i]]
-          ts_10yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_10yr[sumpt_i]:ijk$t_k[sumpt_i]]
-
-          ts_10yr01yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_10yr[sumpt_i]:ijk$t_01yr[sumpt_i]]
-          ts_ALLB4 = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], 1:ijk$t_k[sumpt_i]]
-
-          # t_01mo = t[ijk$t_01mo[sumpt_i]:ijk$t_k[sumpt_i]]
           t_03mo = t[ijk$t_03mo[sumpt_i]:ijk$t_k[sumpt_i]]
           t_01yr = t[ijk$t_01yr[sumpt_i]:ijk$t_k[sumpt_i]]
-          t_03yr = t[ijk$t_03yr[sumpt_i]:ijk$t_k[sumpt_i]]
-          t_05yr = t[ijk$t_05yr[sumpt_i]:ijk$t_k[sumpt_i]]
-          t_10yr = t[ijk$t_10yr[sumpt_i]:ijk$t_k[sumpt_i]]
-          t_10yr01yr = t[ijk$t_10yr[sumpt_i]:ijk$t_01yr[sumpt_i]]
-          t_ALLB4 = t[1:ijk$t_k[sumpt_i]]
+          eval(parse(text = paste0("SM$", paramsum.name, "_MO03[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_03mo, na.rm = T)")))
+          eval(parse(text = paste0("SM$", paramsum.name, "_YR01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_01yr, na.rm = T)")))
 
-          if(paramsum[sum_i] %in% c("mean", "q05", "q95","sd")){
-
-            # eval(parse(text = paste0("SM$", paramsum.name, "_MO01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_01mo, na.rm = T)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_MO03[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_03mo, na.rm = T)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_01yr, na.rm = T)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR03[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_03yr, na.rm = T)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR05[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_05yr, na.rm = T)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR10[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_10yr, na.rm = T)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR10YR01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_10yr01yr, na.rm = T)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_ALLB4[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_ALLB4, na.rm = T)")))
-
-          }else{
-
-            eval(parse(text = paste0("SM$", paramsum.name, "_MO03[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_03mo, na.rm = T, t = t_03mo)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_01yr, na.rm = T, t = t_01yr)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR03[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_03yr, na.rm = T, t = t_03yr)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR05[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_05yr, na.rm = T, t = t_05yr)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR10[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_10yr, na.rm = T, t = t_10yr)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_YR10YR01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_10yr01yr, na.rm = T, t = t_10yr01yr)")))
-            eval(parse(text = paste0("SM$", paramsum.name, "_ALLB4[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_ALLB4, na.rm = T, t = t_ALLB4)")))
-
-          }#END if
 
         }#END Loop over this island's points (for 1:length(SM_i))
 
@@ -374,11 +316,11 @@ SM[SM == -9991] <- NA
 colnames(SM) = gsub("_SST_CRW_Monthly_", "_sst_", colnames(SM))
 colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
 
-vis_miss(SM[,c(11:38)])
-vis_miss(SM[,c(39:dim(SM)[2])])
+vis_miss(SM[,c(11:18)])
+vis_miss(SM[,c(19:dim(SM)[2])])
 
-sst = cor(SM[,c(11:38)], use = "complete.obs")
-chla = cor(SM[,c(39:dim(SM)[2])], use = "complete.obs")
+sst = cor(SM[,c(11:18)], use = "complete.obs")
+chla = cor(SM[,c(19:dim(SM)[2])], use = "complete.obs")
 
 corrplot(sst, method = "shade", cl.lim = c(min(sst), 1), is.corr = F, tl.pos = "n")
 corrplot(chla, method = "shade", cl.lim = c(min(chla), 1), is.corr = F, tl.pos = "n")
@@ -398,8 +340,8 @@ b = fortify.bathy(b)
 sd = SM %>%
   subset(SITE %in% good_sites) %>%
   group_by(SITE) %>%
-  mutate(sd = median(sd_sst_YR10)) %>%
-  ggplot(aes(x = sd_sst_YR10, y = SITE , fill = sd, color = sd)) +
+  mutate(sd = median(sd_sst_YR01)) %>%
+  ggplot(aes(x = sd_sst_YR01, y = SITE , fill = sd, color = sd)) +
   geom_joy(scale = 3, alpha = 0.8, size = 0.01) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
@@ -412,14 +354,9 @@ map = SM %>%
   group_by(SITE) %>%
   summarise(lon = mean(LON),
             lat = mean(LAT),
-            sd = median(sd_sst_YR10)) %>%
+            sd = median(sd_sst_YR01)) %>%
   ggplot(aes(x = lon, y = lat)) +
   geom_point(alpha = 0.3, size = 5) +
-  # geom_label_repel(aes(label = SITE),
-  #                  label.size = NA,
-  #                  label.padding = 0.1,
-  #                  na.rm = TRUE,
-  #                  fill = alpha(c("white"), 1)) +
   geom_contour(data = b,
                aes(x = x, y = y, z = z),
                breaks = seq(-8000, 0, by = 500),
