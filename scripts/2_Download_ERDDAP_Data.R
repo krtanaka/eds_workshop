@@ -147,13 +147,6 @@ for (iP in 1:length(uP)){
 
   }else{
 
-    # Times Series...
-    # Here we have a whole extra step of generating time-series summaries from the stored .nc data
-    # So, first we'll just store each islands full time series, then either each and merge,
-    # or merge and summarize...
-
-    # Robustly extract dates from the god-damned date changed mess that is excel...
-
     #Start Date
     if(!is.Date(thisp$START_DATE)){
       take1 = ymd(thisp$START_DATE,quiet = T)
@@ -204,10 +197,6 @@ for (iP in 1:length(uP)){
         thislong = thisisland[,c("LEFT_XMIN","RIGHT_XMAX")]
 
       }
-
-      #Figure out blocks to download
-      #- get one "time unit"
-      #- assess length, and space downloads so as not to run over BLOCKSIZE setting
 
       ##griddap call to pull test data from server
       testIP = griddap(x = thisp$DATASET.ID,
@@ -292,9 +281,6 @@ for (iP in 1:length(uP)){
               Ntried = Ntried + 1
 
               if(Ntried > 3){
-
-                #After a few tries, try deleting any "scrambled" filenames in the directory
-                #i.e. a default temp file that griddap assigned - they can mess up progress for some reason
 
                 fl = list.files(pib_path) #get list of files
 
@@ -535,9 +521,6 @@ for (iP in 1:length(uP)){
   } # Close Not a Climatology Else
 
 }#Close each param For
-
-# check downloaded ERDDAP nc files
-# static and dynamic files
 
 path = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
 
