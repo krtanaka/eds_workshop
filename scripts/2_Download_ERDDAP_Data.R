@@ -2,6 +2,7 @@
 ### Scripts to download gridded data from ERDDAP server      ###
 ### Originally developed & conceptualized by T.A.Oliver      ###
 ### Revised & Edited & Maintained by K.R.Tanaka & T.A.Oliver ###
+### POC: kisei.tanaka@noaa.gov & thomas.oliver@noaa.gov      ###
 ################################################################
 
 rm(list = ls())
@@ -24,12 +25,9 @@ ParamDF = subset(ParamDF, DOWNLOAD == "YES")
 startwith = 1
 endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
-uP = unique(ParamDF$PARAMETER.NAME)[c(4, 9, 3, 11)]; uP # static and dynamic SST and chl_a
+uP = unique(ParamDF$PARAMETER.NAME); uP # static and dynamic SST and chl_a
 
-# path to M or G drive to store ERDDAP nc files
-# connect to NOAA PIFSC VPN
-# if you do not have NOAA VPN save them on your desktop
-EDSpath = "G:/Environmental Data Summary_Demo/" # w/ VPN & G/M Drives
+# path to store ERDDAP nc files
 EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "Environmental Data Summary_Demo/") # w/o VPN
 
 if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
@@ -541,7 +539,6 @@ for (iP in 1:length(uP)){
 # check downloaded ERDDAP nc files
 # static and dynamic files
 
-path = "G:/Environmental Data Summary_Demo/DataDownload/"
 path = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
 
 dev.off()
@@ -555,14 +552,9 @@ plot(stack(paste0(path, "Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/", uI, "_
 plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/", uI, "_SST_CRW_Monthly_1985-01-31_2021-03-31.nc")))
 
 # summary statistics
-par(mfrow = c(2,3))
+par(mfrow = c(2,2))
 
 plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean/", uI, "_SST_CRW_Monthly_mean_1985-01-31_2021-03-31.nc")), main = "mean")
-
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean_annual_range/", uI, "_SST_CRW_Monthly_mean_annual_range_1985-01-31_2021-03-31.nc")), main = "mean_annual_range")
-
 plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q05/", uI, "_SST_CRW_Monthly_q05_1985-01-31_2021-03-31.nc")), main = "q05")
-
 plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q95/", uI, "_SST_CRW_Monthly_q95_1985-01-31_2021-03-31.nc")), main = "q95")
-
 plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/sd/", uI, "_SST_CRW_Monthly_sd_1985-01-31_2021-03-31.nc")), main = "sd")

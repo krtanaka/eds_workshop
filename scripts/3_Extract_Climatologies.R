@@ -2,6 +2,7 @@
 ### Scripts to attach climatologies variables to in situ data ###
 ### Originally developed & conceptualized by T.A.Oliver       ###
 ### Revised & Edited & Maintained by K.R.Tanaka               ###
+### POC: kisei.tanaka@noaa.gov & thomas.oliver@noaa.gov       ###
 #################################################################
 
 rm(list = ls())
@@ -32,8 +33,6 @@ coordinates(SM_sp) = ~LONGITUDE_LOV + LATITUDE_LOV
 
 # get list of rasters (i.e., climatologies)
 rasterlist = list.files(c(
-  # "M:/Environmental Data Summary/DataDownload/Bathymetry_ETOPO1/",
-  # "M:/Environmental Data Summary/DataDownload/Bathymetry_SRTM15/",
   paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/Chlorophyll_A_ESAOCCCI_Clim/"),
   paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/SST_CRW_Clim/")),
   recursive = T,

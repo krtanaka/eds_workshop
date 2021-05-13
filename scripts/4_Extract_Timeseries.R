@@ -1,8 +1,9 @@
-#########################################################################
-### R scripts to attach timeseries variables to "Survey_Master" file  ###
-### Originally developed & conceptualized by T.A.Oliver               ###
-### Revised & Maintained by K.R.Tanaka & T.A.Oliver                   ###
-#########################################################################
+#######################################################################
+### R scripts to attach timeseries variables to in situ survey data ###
+### Originally developed & conceptualized by T.A.Oliver             ###
+### Revised & Maintained by K.R.Tanaka & T.A.Oliver                 ###
+### POC: kisei.tanaka@noaa.gov & thomas.oliver@noaa.gov             ###
+#######################################################################
 
 rm(list = ls())
 
@@ -52,20 +53,10 @@ BB_ISL = read.csv("data/Island_Extents.csv"); unique(BB_ISL$ISLAND.CODE)
 
 #######################################################################
 ### Build list of target environmental variables                    ###
-### See folder names in M:/Environmental Data Summary/DataDownload/ ###
 #######################################################################
-paramdir = "M:/Environmental Data Summary/DataDownload/"
 paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
 parameters = list.files(path = paramdir, full.names = F); parameters # list all variables
-parameters = c(
-  # "Degree_Heating_Weeks",
-  # "SST_CRW_Daily",
-  "SST_CRW_Monthly",
-  # "kdPAR_VIIRS_Weekly",
-  "Chlorophyll_A_ESAOCCCI_8Day"
-  # "Kd490_ESAOCCCI_8Day",
-  # "PAR_MODIS_Daily"
-); parameters # select only dynamic variables
+parameters = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_8Day"); parameters # select only dynamic variables
 
 #########################################
 ### Read EDS Parameter/Variable Table ###
@@ -383,11 +374,11 @@ SM[SM == -9991] <- NA
 colnames(SM) = gsub("_SST_CRW_Monthly_", "_sst_", colnames(SM))
 colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
 
-vis_miss(SM[,c(11:66)])
-vis_miss(SM[,c(67:dim(SM)[2])])
+vis_miss(SM[,c(11:38)])
+vis_miss(SM[,c(39:dim(SM)[2])])
 
-sst = cor(SM[,c(11:66)], use = "complete.obs")
-chla = cor(SM[,c(67:dim(SM)[2])], use = "complete.obs")
+sst = cor(SM[,c(11:38)], use = "complete.obs")
+chla = cor(SM[,c(39:dim(SM)[2])], use = "complete.obs")
 
 corrplot(sst, method = "shade", cl.lim = c(min(sst), 1), is.corr = F, tl.pos = "n")
 corrplot(chla, method = "shade", cl.lim = c(min(chla), 1), is.corr = F, tl.pos = "n")

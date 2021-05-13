@@ -2,6 +2,7 @@
 ### Scripts to create bounding boxes around surveyed islands ###
 ### Originally developed & conceptualized by T.A.Oliver      ###
 ### Revised & Maintained by K.R.Tanaka & T.A.Oliver          ###
+### POC: kisei.tanaka@noaa.gov & thomas.oliver@noaa.gov      ###
 ################################################################
 
 rm(list = ls())
