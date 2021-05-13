@@ -431,39 +431,3 @@ map = SM %>%
   coord_fixed()
 
 map + sd
-
-# load EDS result with full REA data
-load('outputs/Timeseries_2021-02-27.Rdata')
-SM[SM == -9991] <- NA
-
-n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 10)
-good_sites = n$SITE
-
-SM %>%
-  subset(SITE %in% good_sites) %>%
-  group_by(SITE) %>%
-  mutate(sd = median(sd_SST_CRW_Daily_YR01)) %>%
-  ggplot(aes(x = sd_SST_CRW_Daily_YR10, y = SITE , fill = sd, color = sd)) +
-  geom_joy(scale = 5, alpha = 0.8, size = 0.01, bandwidth = 0.1) +
-  ylab(NULL) +
-  ggdark::dark_theme_minimal() +
-  scale_fill_gradientn(colours = matlab.like(length(good_sites))) +
-  scale_color_gradientn(colours = matlab.like(length(good_sites))) +
-  theme(legend.position = "none")
-
-vis_miss(SM[,c(52:380)], warn_large_data = F)
-
-n = SM %>% group_by(ISLAND) %>% summarise(n = n()) %>% subset(n > 100)
-big_islands = n$ISLAND
-
-SM %>%
-  subset(ISLAND %in% big_islands) %>%
-  group_by(ISLAND) %>%
-  mutate(sd = median(sd_SST_CRW_Daily_YR01, na.rm = T)) %>%
-  ggplot(aes(x = sd_SST_CRW_Daily_YR10, y = ISLAND , fill = sd, color = sd)) +
-  geom_joy(scale = 5, alpha = 0.8, size = 0.01, bandwidth = 0.1) +
-  ylab(NULL) +
-  ggdark::dark_theme_minimal() +
-  scale_fill_gradientn(colours = matlab.like(length(big_islands))) +
-  scale_color_gradientn(colours = matlab.like(length(big_islands))) +
-  theme(legend.position = "right")
