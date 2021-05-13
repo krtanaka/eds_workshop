@@ -8,7 +8,7 @@
 rm(list = ls())
 
 # Library Calls and Function Definition
-source("scripts/HelperCode/EDS_HelperFunctions.R")
+source("scripts/EDS_HelperFunctions.R")
 
 # Setup ERRDAP Cache
 cache_setup(temp_dir = TRUE)

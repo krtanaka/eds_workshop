@@ -26,7 +26,7 @@ dir = paste0(getwd(), "/")
 ############################
 ### load Tom's functions ###
 ############################
-source("scripts/HelperCode/EDS_HelperFunctions.R")
+source("scripts/EDS_HelperFunctions.R")
 
 ###########################################################################
 ### read survey data points, assign distinct lat, lon, and time columns ###

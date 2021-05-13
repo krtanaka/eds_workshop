@@ -17,7 +17,7 @@ library(ggjoy)
 dir = getwd()
 
 # import Tom's functions
-source("scripts/HelperCode/ExpandingExtract.R")
+source("scripts/ExpandingExtract.R")
 
 # import survey data, SM = master REA survey file, subset if necessary
 load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER
