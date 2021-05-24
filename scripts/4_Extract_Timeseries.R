@@ -322,8 +322,8 @@ vis_miss(SM[,c(19:dim(SM)[2])])
 sst = cor(SM[,c(11:18)], use = "complete.obs")
 chla = cor(SM[,c(19:dim(SM)[2])], use = "complete.obs")
 
-corrplot(sst, method = "shade", cl.lim = c(min(sst), 1), is.corr = F, tl.pos = "n")
-corrplot(chla, method = "shade", cl.lim = c(min(chla), 1), is.corr = F, tl.pos = "n")
+corrplot(sst, method = "shade", cl.lim = c(min(sst), 1), is.corr = F)
+corrplot(chla, method = "shade", cl.lim = c(min(chla), 1), is.corr = F)
 
 detach("package:plyr", unload = TRUE)
 n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 2)
@@ -333,7 +333,7 @@ b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
                   lon2 = max(pretty(SM$LON)),
                   lat1 = min(pretty(SM$LAT)),
                   lat2 = max(pretty(SM$LAT)),
-                  resolution = 1)
+                  resolution = 2)
 
 b = fortify.bathy(b)
 
@@ -344,27 +344,43 @@ sd = SM %>%
   ggplot(aes(x = sd_sst_YR01, y = SITE , fill = sd, color = sd)) +
   geom_joy(scale = 3, alpha = 0.8, size = 0.01) +
   ylab(NULL) +
+  coord_fixed(ratio = 0.06) +
   ggdark::dark_theme_minimal() +
   scale_fill_gradientn(colours = matlab.like(length(good_sites)), "") +
   scale_color_gradientn(colours = matlab.like(length(good_sites)), "") +
-  theme(legend.position = "none")
+  theme(legend.position = "none",
+        axis.title.x = element_blank()) +
+  ggtitle("Obs specific SST sd year_1", )
+
+sites_with_high_sd = SM %>%
+  subset(SITE %in% good_sites) %>%
+  group_by(SITE) %>%
+  summarise(sd = median(sd_sst_YR01)) %>%
+    top_n(sd, 3)
 
 map = SM %>%
   subset(SITE %in% good_sites) %>%
   group_by(SITE) %>%
   summarise(lon = mean(LON),
             lat = mean(LAT),
-            sd = median(sd_sst_YR01)) %>%
-  ggplot(aes(x = lon, y = lat)) +
-  geom_point(alpha = 0.3, size = 5) +
+            sd = median(sd_sst_YR01))
+
+map = ggplot() +
+  geom_point(data = map, aes(x = lon, y = lat),
+             alpha = 0.3, size = 5) +
+  geom_text_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, ""))) +
   geom_contour(data = b,
                aes(x = x, y = y, z = z),
-               breaks = seq(-8000, 0, by = 500),
-               size = c(0.1),
+               breaks = seq(-8000, 0, by = 200),
+               size = c(0.05),
                alpha = 0.8,
-               colour = topo.colors(2910)) +
+               colour = topo.colors(3310)) +
   ggdark::dark_theme_minimal() +
-  theme(legend.position = "none") +
+  # theme_void() +
+  theme(legend.position = "none",
+        axis.title = element_blank()) +
   coord_fixed()
 
-map + sd
+png(paste0("/Users/", Sys.info()[7], "/Desktop/map_sd.png"),units = "in", res = 100,  height = 6, width = 10)
+sd + map
+dev.off()
