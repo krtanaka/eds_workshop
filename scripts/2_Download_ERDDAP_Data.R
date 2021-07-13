@@ -7,6 +7,17 @@
 
 rm(list = ls())
 
+library(rerddap)
+library(zoo)
+library(ncdf4)
+library(RNetCDF)
+library(easyNCDF)
+library(raster)
+library(lubridate)
+library(abind)
+library(plyr)
+library(acss)
+
 # Library Calls and Function Definition
 source("scripts/EDS_HelperFunctions.R")
 
