@@ -41,10 +41,10 @@ region = unique(df$REGION)
 df %>%
   subset(REGION == region) %>%
   group_by(ISLAND) %>%
-  summarise(RIGHT_XMAX = min(lon)-0.25,
-            LEFT_XMIN = max(lon)+0.25,
-            TOP_YMAX = min(lat)-0.25,
-            BOTTOM_YMIN = max(lat)+0.25) %>%
+  summarise(RIGHT_XMAX = min(lon)-0.1,
+            LEFT_XMIN = max(lon)+0.1,
+            TOP_YMAX = min(lat)-0.1,
+            BOTTOM_YMIN = max(lat)+0.1) %>%
   ggplot() +
   annotation_map(map_data("world")) +
   geom_point(data = df %>% subset(REGION == region), aes(lon, lat, color = ISLAND), alpha = 0.5) +
@@ -65,10 +65,10 @@ df %>%
 
 boxes = df %>%
   group_by(ISLAND) %>%
-  summarise(RIGHT_XMAX = min(lon)-0.25,
-            LEFT_XMIN = max(lon)+0.25,
-            TOP_YMAX = min(lat)-0.25,
-            BOTTOM_YMIN = max(lat)+0.25)
+  summarise(RIGHT_XMAX = min(lon)-0.1,
+            LEFT_XMIN = max(lon)+0.1,
+            TOP_YMAX = min(lat)-0.1,
+            BOTTOM_YMIN = max(lat)+0.1)
 
 df_frame = df[,c("REGION", "ISLAND")]
 
@@ -81,4 +81,4 @@ colnames(df)[2] = "ISLAND.CODE"
 
 df$ISLAND.CODE = gsub(" ", "_", df$ISLAND.CODE)
 
-# write_csv(df, 'data/Island_Extents.csv')
+write_csv(df, 'data/Island_Extents.csv')

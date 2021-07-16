@@ -6,17 +6,14 @@ library(dplyr)
 library(ggplot2)
 library(readr)
 
-# set working directory
-setwd(paste0("/Users/", Sys.info()[7], "/Desktop/Maya"))
-
 # load spatial grid
-df = raster("jplG1SST_b799_dd6c_7662.nc") # spatial grids around MHIs around at 1-km resolution
+df = raster("data/jplG1SST_b799_dd6c_7662.nc") # spatial grids around MHIs around at 1-km resolution
 df = rasterToPoints(df)
 df = as.data.frame(df[,1:2])
 df$x = ifelse(df$x < 0, df$x + 360, df$x)
 
 # load Maya's list of islands
-is = read.csv("Reference Spreadsheet - Island_Extents.csv")
+is = read.csv("data/Reference Spreadsheet - Island_Extents.csv")
 is$LEFT_XMIN = ifelse(is$LEFT_XMIN < 0, is$LEFT_XMIN + 360, is$LEFT_XMIN)
 is$RIGHT_XMAX = ifelse(is$RIGHT_XMAX < 0, is$RIGHT_XMAX + 360, is$RIGHT_XMAX)
 islands = is$ISLAND.CODE
@@ -68,10 +65,10 @@ mayas_islands %>%
   theme_void()
 
 # export as a csv file
-write_csv(mayas_islands, "Mayas_Islands.csv")
+write_csv(mayas_islands, "data/Mayas_Islands.csv")
 
 # Import Maya's catch records
-catch <- read_csv("Reference Spreadsheet - Sheet10.csv")
+catch <- read_csv("data/Reference Spreadsheet - Sheet10.csv")
 
 # rename columns
 colnames(catch) = c("Sp_Common_Name", "Issue_Date", "Date_Caught", "Location", "Island", "Cardinal_Direction", "Island_Sector")
@@ -115,6 +112,4 @@ catch_grid$Lat = round(catch_grid$Lat, 1)
 
 catch_grid = unique(catch_grid)
 
-save(catch_grid, file = "catch_location_date.Rdata")
-
-
+save(catch_grid, file = "data/catch_location_date.Rdata")

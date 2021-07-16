@@ -39,7 +39,7 @@ ParamDF = ParamDF[startwith:endwith,]
 uP = unique(ParamDF$PARAMETER.NAME); uP # static and dynamic SST and chl_a
 
 # path to store ERDDAP nc files
-EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "Environmental Data Summary_Demo/") # w/o VPN
+EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "EDS/") # w/o VPN
 
 if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
 
