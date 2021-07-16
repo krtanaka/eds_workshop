@@ -21,6 +21,8 @@ source("scripts/ExpandingExtract.R")
 
 # import survey data, SM = master REA survey file, subset if necessary
 load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER
+load('data/catch_location_date.Rdata'); SM = catch_grid; SM$REGION = "MHI"; colnames(SM) = c("ISLAND", "SP", "DATE_", "LONGITUDE_LOV", "LATITUDE_LOV", "REGION")
+
 table(SM$REGION)
 SM = subset(SM, ISLAND %in% c("Hawaii"))
 
@@ -84,14 +86,14 @@ save(SM_climtologies, file = paste0("outputs/Climatologies_", Sys.Date(), ".RDat
 
 detach("package:raster", unload = TRUE)
 
-good_sites = SM_climtologies %>% group_by(SITE) %>% dplyr::summarise(n = n()) %>% subset(n > 2)
-good_sites = unique(good_sites$SITE)
+good_sites = SM_climtologies %>% group_by(SP) %>% dplyr::summarise(n = n()) %>% subset(n > 100)
+good_sites = unique(good_sites$SP)
 
 clim1 = SM_climtologies %>%
-  subset(SITE %in% good_sites) %>%
-  select(SITE, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
-  `colnames<-` (c("Site", "chl_a_1998_2017")) %>%
-  ggplot(aes(x = chl_a_1998_2017, y = Site, fill = chl_a_1998_2017, color = chl_a_1998_2017)) +
+  subset(SP %in% good_sites) %>%
+  select(SP, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
+  `colnames<-` (c("Species", "chl_a_1998_2017")) %>%
+  ggplot(aes(x = chl_a_1998_2017, y = Species, fill = chl_a_1998_2017, color = chl_a_1998_2017)) +
   geom_joy(scale = 2, alpha = 0.8, size = 0.1, bandwidth = 0.05) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
@@ -100,8 +102,8 @@ clim1 = SM_climtologies %>%
   theme(legend.position = "right")
 
 clim2 = SM_climtologies %>%
-  subset(SITE %in% good_sites) %>%
-  select(SITE, SST_CRW_Clim_CumMean_1985_2018) %>%
+  subset(SP %in% good_sites) %>%
+  select(SP, SST_CRW_Clim_CumMean_1985_2018) %>%
   `colnames<-` (c("Site", "sst_1985_2018")) %>%
   ggplot(aes(x = sst_1985_2018, y = Site, fill = sst_1985_2018, color = sst_1985_2018)) +
   geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.05) +

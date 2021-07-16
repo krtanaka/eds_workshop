@@ -28,7 +28,7 @@ closeAllConnections()
 
 # load your bounding boxes (Islands)
 Ibbox = read.csv("data/Island_Extents.csv", stringsAsFactors = F) # Updated Bounding boxes 2021
-uI = unique(Ibbox$ISLAND.CODE)[13]; uI
+uI = unique(Ibbox$ISLAND.CODE); uI
 
 # select ERDDAP data
 ParamDF = read.csv("data/EDS_parameters.csv", stringsAsFactors = F)

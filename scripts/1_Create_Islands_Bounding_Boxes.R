@@ -17,21 +17,26 @@ library(rgeos)
 library(sf)
 library(maps)
 
-load('data/SURVEY MASTER.RData'); df = SURVEY_MASTER
+load('data/catch_location_date.Rdata'); df = catch_grid
 
-df$lon = df$LONGITUDE_LOV
-df$lat = df$LATITUDE_LOV
+df$lon = df$Lon
+df$lat = df$Lat
+
+df$REGION = "MHI"
+df$ISLAND = df$Island
 
 drop_LatLonNAs = unique(c(which(is.na(df$lon)), which(is.na(df$lat))))
 if(length(drop_LatLonNAs) > 0) df = df[-drop_LatLonNAs,]
 dim(df)
+
+df$lon = ifelse(df$lon > 180, df$lon - 360, df$lon)
 
 ###############
 ### mapping ###
 ###############
 
 unique(df$REGION)
-region = unique(df$REGION)[5]
+region = unique(df$REGION)
 
 df %>%
   subset(REGION == region) %>%

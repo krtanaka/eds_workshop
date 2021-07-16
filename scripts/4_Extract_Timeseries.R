@@ -32,6 +32,8 @@ source("scripts/EDS_HelperFunctions.R")
 ### read survey data points, assign distinct lat, lon, and time columns ###
 ###########################################################################
 load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER %>% subset(ISLAND == "Hawaii")
+load('data/catch_location_date.Rdata'); SM = catch_grid; SM$REGION = "MHI"; colnames(SM) = c("ISLAND", "SP", "DATE_", "LONGITUDE_LOV", "LATITUDE_LOV", "REGION")
+SM = SM %>% subset(ISLAND != "Molokai")
 
 SM$ISLAND = gsub(" ", "_", SM$ISLAND)
 
