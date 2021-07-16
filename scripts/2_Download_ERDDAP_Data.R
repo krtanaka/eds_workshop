@@ -533,7 +533,7 @@ for (iP in 1:length(uP)){
 
 }#Close each param For
 
-path = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
+path = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/")
 
 dev.off()
 
@@ -542,13 +542,13 @@ plot(raster(paste0(path, "Chlorophyll_A_ESAOCCCI_Clim/Chlorophyll_A_ESAOCCCI_Cli
 plot(raster(paste0(path, "SST_CRW_Clim/SST_CRW_Clim_CumMean_1985_2018_AllIslands.nc")))
 
 # time steps
-plot(stack(paste0(path, "Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/", uI, "_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")))
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/", uI, "_SST_CRW_Monthly_1985-01-31_2021-03-31.nc")))
+plot(stack(paste0(path, "Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/", uI[1], "_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")))
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/", uI[1], "_SST_CRW_Monthly_1985-01-31_2021-03-31.nc")))
 
 # summary statistics
 par(mfrow = c(2,2))
 
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean/", uI, "_SST_CRW_Monthly_mean_1985-01-31_2021-03-31.nc")), main = "mean")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q05/", uI, "_SST_CRW_Monthly_q05_1985-01-31_2021-03-31.nc")), main = "q05")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q95/", uI, "_SST_CRW_Monthly_q95_1985-01-31_2021-03-31.nc")), main = "q95")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/sd/", uI, "_SST_CRW_Monthly_sd_1985-01-31_2021-03-31.nc")), main = "sd")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean/", uI[1], "_SST_CRW_Monthly_mean_1985-01-31_2021-03-31.nc")), main = "mean")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q05/", uI[1], "_SST_CRW_Monthly_q05_1985-01-31_2021-03-31.nc")), main = "q05")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q95/", uI[1], "_SST_CRW_Monthly_q95_1985-01-31_2021-03-31.nc")), main = "q95")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/sd/", uI[1], "_SST_CRW_Monthly_sd_1985-01-31_2021-03-31.nc")), main = "sd")
