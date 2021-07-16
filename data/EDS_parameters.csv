@@ -3,12 +3,4 @@ Chlorophyll_A_ESAOCCCI_8Day,YES,ESA OC CCI,8day,https://oceanwatch.pifsc.noaa.go
 Chlorophyll_A_ESAOCCCI_Clim,YES,ESA OC CCI,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-1998-2017-clim,chlor_a,CumMean_1998_2017,CumMean_1998_2017,1,99999999,NA,TRUE
 SST_CRW_Clim,YES,Coral Reef Watch,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v1_0_1985-2018-clim,analysed_sst,CumMean_1985_2018,CumMean_1985_2018,1,99999999,NA,FALSE
 SST_CRW_Monthly,YES,Coral Reef Watch,Monthly,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v3_1_monthly,sea_surface_temperature,1/31/1985,3/31/2021,435,10000,mean;q05;q95;sd,FALSE
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
+SST_CRW_Daily,YES,Coral Reef Watch,Daily,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v1_0,analysed_sst,1/1/1985,12/31/2019,12783,10000,mean;q05;q95;sd;mean_annual_range;mean_monthly_range;mean_biweekly_range;mean_weekly_range,FALSE
