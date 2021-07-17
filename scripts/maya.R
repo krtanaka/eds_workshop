@@ -103,8 +103,8 @@ grid_sector = mayas_islands %>% mutate(ID = paste0(Island, "_", Island_Sector))
 catch_grid_sector = merge(catch_sector, grid_sector)
 
 catch_grid = rbind(
-  catch_grid_sector %>% dplyr::select(Island, Sp_Common_Name, Date_Caught, Lon, Lat),
-  catch_grid_whole_island %>% dplyr::select(Island, Sp_Common_Name, Date_Caught, Lon, Lat))
+  catch_grid_sector %>% dplyr::select(Island, Island_Sector, Sp_Common_Name, Date_Caught, Lon, Lat),
+  catch_grid_whole_island %>% dplyr::select(Island, Island_Sector, Sp_Common_Name, Date_Caught, Lon, Lat))
 
 # too many rows...
 catch_grid$Lon = round(catch_grid$Lon, 1)
