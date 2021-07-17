@@ -24,7 +24,7 @@ load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER
 load('data/catch_location_date.Rdata'); SM = catch_grid; SM$REGION = "MHI"; colnames(SM) = c("ISLAND", "SP", "DATE_", "LONGITUDE_LOV", "LATITUDE_LOV", "REGION")
 
 table(SM$REGION)
-SM = subset(SM, ISLAND %in% c("Hawaii"))
+# SM = subset(SM, ISLAND %in% c("Hawaii"))
 
 SM$LONGITUDE_LOV = ifelse(SM$LONGITUDE_LOV < 0, SM$LONGITUDE_LOV + 360, SM$LONGITUDE_LOV)
 
@@ -35,8 +35,8 @@ coordinates(SM_sp) = ~LONGITUDE_LOV + LATITUDE_LOV
 
 # get list of rasters (i.e., climatologies)
 rasterlist = list.files(c(
-  paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/Chlorophyll_A_ESAOCCCI_Clim/"),
-  paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/SST_CRW_Clim/")),
+  paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/Chlorophyll_A_ESAOCCCI_Clim/"),
+  paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/SST_CRW_Clim/")),
   recursive = T,
   pattern = "_AllIslands.nc",
   full.names = T)
@@ -86,15 +86,16 @@ save(SM_climtologies, file = paste0("outputs/Climatologies_", Sys.Date(), ".RDat
 
 detach("package:raster", unload = TRUE)
 
-good_sites = SM_climtologies %>% group_by(SP) %>% dplyr::summarise(n = n()) %>% subset(n > 100)
-good_sites = unique(good_sites$SP)
+sp_il_sector = SM_climtologies %>% group_by(SP, ISLAND) %>% summarise(n = n()) %>% mutate(ID = paste0(SP, " ", ISLAND)) %>% subset(n > 100)
+sp_il_sector = unique(sp_il_sector$ID)
 
 clim1 = SM_climtologies %>%
-  subset(SP %in% good_sites) %>%
-  select(SP, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
-  `colnames<-` (c("Species", "chl_a_1998_2017")) %>%
-  ggplot(aes(x = chl_a_1998_2017, y = Species, fill = chl_a_1998_2017, color = chl_a_1998_2017)) +
-  geom_joy(scale = 2, alpha = 0.8, size = 0.1, bandwidth = 0.05) +
+  mutate(ID = paste0(SP, " ", ISLAND)) %>%
+  subset(ID %in% sp_il_sector) %>%
+  select(ID, Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017) %>%
+  `colnames<-` (c("species_island", "chl_a_1998_2017")) %>%
+  ggplot(aes(x = chl_a_1998_2017, y = species_island, fill = chl_a_1998_2017)) +
+  geom_joy(scale = 2, alpha = 0.8, size = 0.1) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
   scale_fill_viridis_c("") +
@@ -102,11 +103,12 @@ clim1 = SM_climtologies %>%
   theme(legend.position = "right")
 
 clim2 = SM_climtologies %>%
-  subset(SP %in% good_sites) %>%
-  select(SP, SST_CRW_Clim_CumMean_1985_2018) %>%
-  `colnames<-` (c("Site", "sst_1985_2018")) %>%
-  ggplot(aes(x = sst_1985_2018, y = Site, fill = sst_1985_2018, color = sst_1985_2018)) +
-  geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.05) +
+  mutate(ID = paste0(SP, " ", ISLAND)) %>%
+  subset(ID %in% sp_il_sector) %>%
+  select(ID, SST_CRW_Clim_CumMean_1985_2018) %>%
+  `colnames<-` (c("species_island", "sst_1985_2018")) %>%
+  ggplot(aes(x = sst_1985_2018, y = species_island, fill = sst_1985_2018, color = sst_1985_2018)) +
+  geom_joy(scale = 2, alpha = 0.8, size = 0) +
   ylab(NULL) +
   ggdark::dark_theme_minimal() +
   scale_fill_gradientn(colors =  colorRamps::matlab.like(100), "") +
