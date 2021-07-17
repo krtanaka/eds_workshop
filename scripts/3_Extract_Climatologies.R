@@ -33,8 +33,8 @@ coordinates(SM_sp) = ~LONGITUDE_LOV + LATITUDE_LOV
 
 # get list of rasters (i.e., climatologies)
 rasterlist = list.files(c(
-  paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/Chlorophyll_A_ESAOCCCI_Clim/"),
-  paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/SST_CRW_Clim/")),
+  paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/Chlorophyll_A_ESAOCCCI_Clim/"),
+  paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/SST_CRW_Clim/")),
   recursive = T,
   pattern = "_AllIslands.nc",
   full.names = T)
