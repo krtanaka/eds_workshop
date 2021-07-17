@@ -20,7 +20,6 @@ dir = getwd()
 source("scripts/ExpandingExtract.R")
 
 # import survey data, SM = master REA survey file, subset if necessary
-load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER
 load('data/catch_location_date.Rdata'); SM = catch_grid; SM$REGION = "MHI"; colnames(SM) = c("ISLAND", "SP", "DATE_", "LONGITUDE_LOV", "LATITUDE_LOV", "REGION")
 
 table(SM$REGION)
