@@ -32,7 +32,10 @@ source("scripts/EDS_HelperFunctions.R")
 ### read survey data points, assign distinct lat, lon, and time columns ###
 ###########################################################################
 load('data/SURVEY MASTER.RData'); SM = SURVEY_MASTER %>% subset(ISLAND == "Hawaii")
-load('data/catch_location_date.Rdata'); SM = catch_grid; SM$REGION = "MHI"; colnames(SM) = c("ISLAND", "SP", "DATE_", "LONGITUDE_LOV", "LATITUDE_LOV", "REGION")
+load('data/catch_location_date.Rdata');
+SM = catch_grid;
+SM$REGION = "MHI";
+colnames(SM) = c("ISLAND", "SECTOR", "SP", "DATE_", "LONGITUDE_LOV", "LATITUDE_LOV", "REGION")
 SM = SM %>% subset(ISLAND != "Molokai")
 
 SM$ISLAND = gsub(" ", "_", SM$ISLAND)
@@ -56,8 +59,8 @@ BB_ISL = read.csv("data/Island_Extents.csv"); unique(BB_ISL$ISLAND.CODE)
 ####################################################
 ### Build list of target environmental variables ###
 ####################################################
-paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
-parameters = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_8Day"); parameters # select only dynamic variables
+paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/")
+parameters = c("SST_CRW_Daily", "Chlorophyll_A_ESAOCCCI_8Day"); parameters # select only dynamic variables
 
 #########################################
 ### Read EDS Parameter/Variable Table ###
@@ -315,74 +318,68 @@ end_time - start_time
 SM[SM == -9991] <- NA
 
 #make columns easier to read...
-colnames(SM) = gsub("_SST_CRW_Monthly_", "_sst_", colnames(SM))
+colnames(SM) = gsub("_SST_CRW_Daily_", "_SST_Daily_", colnames(SM))
 colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
 
-vis_miss(SM[,c(11:18)])
-vis_miss(SM[,c(19:dim(SM)[2])])
+vis_miss(SM[,c(12:19)])
+vis_miss(SM[,c(20:dim(SM)[2])])
 
-sst = cor(SM[,c(11:18)], use = "complete.obs")
-chla = cor(SM[,c(19:dim(SM)[2])], use = "complete.obs")
-
-corrplot(sst, method = "shade", cl.lim = c(min(sst), 1), is.corr = F)
-corrplot(chla, method = "shade", cl.lim = c(min(chla), 1), is.corr = F)
-
-detach("package:plyr", unload = TRUE)
-n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 2)
-good_sites = n$SITE
-
-b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
-                  lon2 = max(pretty(SM$LON)),
-                  lat1 = min(pretty(SM$LAT)),
-                  lat2 = max(pretty(SM$LAT)),
-                  resolution = 2)
-
-b = fortify.bathy(b)
-
-sd = SM %>%
-  subset(SITE %in% good_sites) %>%
-  group_by(SITE) %>%
-  mutate(sd = median(sd_sst_YR01)) %>%
-  ggplot(aes(x = sd_sst_YR01, y = SITE , fill = sd, color = sd)) +
-  geom_joy(scale = 3, alpha = 0.8, size = 0.01) +
-  ylab(NULL) +
-  coord_fixed(ratio = 0.06) +
-  ggdark::dark_theme_minimal() +
-  scale_fill_gradientn(colours = matlab.like(length(good_sites)), "") +
-  scale_color_gradientn(colours = matlab.like(length(good_sites)), "") +
-  theme(legend.position = "none",
-        axis.title.x = element_blank()) +
-  ggtitle("Obs specific SST sd year_1", )
-
-sites_with_high_sd = SM %>%
-  subset(SITE %in% good_sites) %>%
-  group_by(SITE) %>%
-  summarise(sd = median(sd_sst_YR01)) %>%
-    top_n(sd, 3)
-
-map = SM %>%
-  subset(SITE %in% good_sites) %>%
-  group_by(SITE) %>%
-  summarise(lon = mean(LON),
-            lat = mean(LAT),
-            sd = median(sd_sst_YR01))
-
-map = ggplot() +
-  geom_point(data = map, aes(x = lon, y = lat),
-             alpha = 0.3, size = 5) +
-  geom_text_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, ""))) +
-  geom_contour(data = b,
-               aes(x = x, y = y, z = z),
-               breaks = seq(-8000, 0, by = 200),
-               size = c(0.05),
-               alpha = 0.8,
-               colour = topo.colors(3310)) +
-  ggdark::dark_theme_minimal() +
-  # theme_void() +
-  theme(legend.position = "none",
-        axis.title = element_blank()) +
-  coord_fixed()
-
-png(paste0("/Users/", Sys.info()[7], "/Desktop/map_sd.png"),units = "in", res = 100,  height = 6, width = 10)
-sd + map
-dev.off()
+# detach("package:plyr", unload = TRUE)
+# n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 2)
+# good_sites = n$SITE
+#
+# b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
+#                   lon2 = max(pretty(SM$LON)),
+#                   lat1 = min(pretty(SM$LAT)),
+#                   lat2 = max(pretty(SM$LAT)),
+#                   resolution = 2)
+#
+# b = fortify.bathy(b)
+#
+# sd = SM %>%
+#   subset(SITE %in% good_sites) %>%
+#   group_by(SITE) %>%
+#   mutate(sd = median(sd_sst_YR01)) %>%
+#   ggplot(aes(x = sd_sst_YR01, y = SITE , fill = sd, color = sd)) +
+#   geom_joy(scale = 3, alpha = 0.8, size = 0.01) +
+#   ylab(NULL) +
+#   coord_fixed(ratio = 0.06) +
+#   ggdark::dark_theme_minimal() +
+#   scale_fill_gradientn(colours = matlab.like(length(good_sites)), "") +
+#   scale_color_gradientn(colours = matlab.like(length(good_sites)), "") +
+#   theme(legend.position = "none",
+#         axis.title.x = element_blank()) +
+#   ggtitle("Obs specific SST sd year_1", )
+#
+# sites_with_high_sd = SM %>%
+#   subset(SITE %in% good_sites) %>%
+#   group_by(SITE) %>%
+#   summarise(sd = median(sd_sst_YR01)) %>%
+#     top_n(sd, 3)
+#
+# map = SM %>%
+#   subset(SITE %in% good_sites) %>%
+#   group_by(SITE) %>%
+#   summarise(lon = mean(LON),
+#             lat = mean(LAT),
+#             sd = median(sd_sst_YR01))
+#
+# map = ggplot() +
+#   geom_point(data = map, aes(x = lon, y = lat),
+#              alpha = 0.3, size = 5) +
+#   geom_text_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, ""))) +
+#   geom_contour(data = b,
+#                aes(x = x, y = y, z = z),
+#                breaks = seq(-8000, 0, by = 200),
+#                size = c(0.05),
+#                alpha = 0.8,
+#                colour = topo.colors(3310)) +
+#   ggdark::dark_theme_minimal() +
+#   # theme_void() +
+#   theme(legend.position = "none",
+#         axis.title = element_blank()) +
+#   coord_fixed()
+#
+# png(paste0("/Users/", Sys.info()[7], "/Desktop/map_sd.png"),units = "in", res = 100,  height = 6, width = 10)
+# sd + map
+# dev.off()
