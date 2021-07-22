@@ -60,7 +60,7 @@ BB_ISL = read.csv("data/Island_Extents.csv"); unique(BB_ISL$ISLAND.CODE)
 ### Build list of target environmental variables ###
 ####################################################
 paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/")
-parameters = c("SST_CRW_Daily", "Chlorophyll_A_ESAOCCCI_8Day"); parameters # select only dynamic variables
+parameters = c("SST_CRW_Daily", "SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_8Day", "Chlorophyll_A_ESAOCCCI_Monthly"); parameters # select only dynamic variables
 
 #########################################
 ### Read EDS Parameter/Variable Table ###

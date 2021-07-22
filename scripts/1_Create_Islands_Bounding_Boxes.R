@@ -82,3 +82,4 @@ colnames(df)[2] = "ISLAND.CODE"
 df$ISLAND.CODE = gsub(" ", "_", df$ISLAND.CODE)
 
 write_csv(df, 'data/Island_Extents.csv')
+
