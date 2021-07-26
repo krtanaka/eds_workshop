@@ -1,14 +1,15 @@
 library(colorRamps)
 library(ggplot2)
 library(dplyr)
+library(patchwork)
 
 rm(list = ls())
 
 # choose variable...
-variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[1]
+variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[2]
 
 # choose island...
-island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[1]
+island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[8]
 
 load(paste0('outputs/', island, '_raw_', variable, '.RData'))
 df_i = df_i %>% subset(Island_Sector != "W")
@@ -62,7 +63,7 @@ for (is in 1:length(island_sectors)) {
 }
 
 # plot by month
-df_all %>%
+p1 = df_all %>%
   ggplot(aes(month, mean, color = year, group = year)) +
   geom_point() +
   geom_line() +
@@ -72,7 +73,7 @@ df_all %>%
   ggtitle(island)
 
 # plot by year
-df_all %>%
+p2 = df_all %>%
   group_by(year, sector) %>%
   summarise(mean = mean(mean)) %>%
   ggplot(aes(year, mean, color = sector, group = sector)) +
@@ -83,3 +84,7 @@ df_all %>%
   ggdark::dark_theme_minimal() +
   ggtitle(island)
 
+p1
+p2
+
+p2 + p1
