@@ -6,7 +6,7 @@ library(patchwork)
 rm(list = ls())
 
 # choose variable...
-variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[2]
+variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[1]
 
 # choose island...
 island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[8]
@@ -29,6 +29,7 @@ for (is in 1:length(island_sectors)) {
 
   df = df[-(1:6), , drop = FALSE] #remove first 6 rows
 
+  df[colnames(df)] <- sapply(df[colnames(df)],as.character)
   df[colnames(df)] <- sapply(df[colnames(df)],as.numeric)
 
   sapply(df, class)
