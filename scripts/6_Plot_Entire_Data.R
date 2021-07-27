@@ -6,13 +6,13 @@ library(patchwork)
 rm(list = ls())
 
 # choose variable...
-variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[1]
+variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[2]
 
 # choose island...
-island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[8]
+island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[3]
 
 load(paste0('outputs/', island, '_raw_', variable, '.RData'))
-df_i = df_i %>% subset(Island_Sector != "W")
+# df_i = df_i %>% subset(Island_Sector != "W")
 
 species = unique(df_i$Sp_Common_Name)
 island_sectors = unique(df_i$Island_Sector)
@@ -62,6 +62,8 @@ for (is in 1:length(island_sectors)) {
   df_all = rbind(df_all, df)
 
 }
+
+save(df_all, file = paste0('/Users/Kisei/Desktop/', island, '_raw_', variable, '.RData'))
 
 # plot by month
 p1 = df_all %>%
