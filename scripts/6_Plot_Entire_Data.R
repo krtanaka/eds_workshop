@@ -9,7 +9,7 @@ rm(list = ls())
 variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[2]
 
 # choose island...
-island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[3]
+island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[8]
 
 load(paste0('outputs/', island, '_raw_', variable, '.RData'))
 # df_i = df_i %>% subset(Island_Sector != "W")
@@ -63,15 +63,18 @@ for (is in 1:length(island_sectors)) {
 
 }
 
-save(df_all, file = paste0('/Users/Kisei/Desktop/', island, '_raw_', variable, '.RData'))
+# save(df_all, file = paste0('/Users/Kisei/Desktop/', island, '_raw_', variable, '.RData'))
 
 # plot by month
 p1 = df_all %>%
-  ggplot(aes(month, mean, color = year, group = year)) +
+  group_by(month, sector) %>%
+  summarise(mean = mean(mean, na.rm = T)) %>%
+  # ggplot(aes(month, mean, color = year, group = year)) +
+  ggplot(aes(month, mean, color = sector, group = sector)) +
   geom_point() +
   geom_line() +
-  facet_wrap(~sector) +
-  scale_color_manual(values = matlab.like(length(unique(df_all$year))), "") +
+  # facet_wrap(~sector) +
+  scale_color_manual(values = matlab.like(length(unique(df_all$sector))), "") +
   ggdark::dark_theme_minimal() +
   ggtitle(island)
 
