@@ -12,7 +12,7 @@ load("outputs/Timeseries_2021-07-27.Rdata"); SM[SM == -9991] <- NA
 species = unique(SM$SP)[1]; species
 
 # choose variable...
-variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[1]
+variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[2]
 
 # subset catch data
 if (variable == "SST_CRW_Monthly") {
@@ -107,7 +107,9 @@ df_all %>%
   # facet_wrap(~sector) +
   # scale_color_manual(values = matlab.like(length(unique(df_all$sector))), "") +
   # ggdark::dark_theme_minimal() +
-  ggtitle(paste0(island, "_", species))
+  theme_minimal() +
+  facet_wrap(.~sector) +
+  ggtitle(paste0(island, "_", species, "_", variable))
 
 df_all %>%
   group_by(year, sector) %>%
@@ -116,9 +118,11 @@ df_all %>%
   geom_point() +
   geom_line() +
   geom_point(data = sm, aes(year, mean), size = 3) +
-  scale_x_discrete(breaks = round(seq(min(df_all$year), max(df_all$year), by = 4), 1)) +
+  scale_x_discrete(breaks = round(seq(min(df_all$year), max(df_all$year), by = 10), 1)) +
   # scale_color_manual(values = matlab.like(length(unique(df_all$sector))), "") +
   # ggdark::dark_theme_minimal() +
-  ggtitle(paste0(island, "_", species))
+  theme_minimal() +
+  # facet_wrap(.~sector) +
+  ggtitle(paste0(island, "_", species, "_", variable))
 
 
