@@ -20,6 +20,7 @@ library(acss)
 
 # Library Calls and Function Definition
 source("scripts/EDS_HelperFunctions.R")
+# source('/mnt/ldrive/ktanaka/eds_workshop_2021/scripts/ExpandingExtract.R')
 
 # Setup ERRDAP Cache
 cache_setup(temp_dir = TRUE)
@@ -28,7 +29,7 @@ closeAllConnections()
 
 # load your bounding boxes (Islands)
 Ibbox = read.csv("data/Island_Extents.csv", stringsAsFactors = F) # Updated Bounding boxes 2021
-uI = unique(Ibbox$ISLAND.CODE)[13]; uI
+uI = unique(Ibbox$ISLAND.CODE); uI
 
 # select ERDDAP data
 ParamDF = read.csv("data/EDS_parameters.csv", stringsAsFactors = F)
@@ -36,10 +37,14 @@ ParamDF = subset(ParamDF, DOWNLOAD == "YES")
 startwith = 1
 endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
-uP = unique(ParamDF$PARAMETER.NAME); uP # static and dynamic SST and chl_a
+uP = unique(ParamDF$PARAMETER.NAME)[c(2,5)]; uP # static and dynamic SST and chl_a
 
 # path to store ERDDAP nc files
 EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "EDS/") # w/o VPN
+<<<<<<< HEAD
+=======
+# EDSpath = paste0("/mnt/ldrive/ktanaka/EDS/") # w/o VPN
+>>>>>>> e07036aaa8f5d34706d6193f83c5a377a65b1a2f
 
 if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
 
@@ -541,14 +546,16 @@ dev.off()
 plot(raster(paste0(path, "Chlorophyll_A_ESAOCCCI_Clim/Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017_AllIslands.nc")))
 plot(raster(paste0(path, "SST_CRW_Clim/SST_CRW_Clim_CumMean_1985_2018_AllIslands.nc")))
 
+i = 5
+
 # time steps
-plot(stack(paste0(path, "Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/", uI, "_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")))
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/", uI, "_SST_CRW_Monthly_1985-01-31_2021-03-31.nc")))
+plot(stack(paste0(path, "Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/", uI[i], "_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")))
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/", uI[i], "_SST_CRW_Monthly_1985-01-31_2021-03-31.nc")))
 
 # summary statistics
 par(mfrow = c(2,2))
 
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean/", uI, "_SST_CRW_Monthly_mean_1985-01-31_2021-03-31.nc")), main = "mean")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q05/", uI, "_SST_CRW_Monthly_q05_1985-01-31_2021-03-31.nc")), main = "q05")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q95/", uI, "_SST_CRW_Monthly_q95_1985-01-31_2021-03-31.nc")), main = "q95")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/sd/", uI, "_SST_CRW_Monthly_sd_1985-01-31_2021-03-31.nc")), main = "sd")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean/", uI[i], "_SST_CRW_Monthly_mean_1985-01-31_2021-03-31.nc")), main = "mean")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q05/", uI[i], "_SST_CRW_Monthly_q05_1985-01-31_2021-03-31.nc")), main = "q05")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q95/", uI[i], "_SST_CRW_Monthly_q95_1985-01-31_2021-03-31.nc")), main = "q95")
+plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/sd/", uI[i], "_SST_CRW_Monthly_sd_1985-01-31_2021-03-31.nc")), main = "sd")

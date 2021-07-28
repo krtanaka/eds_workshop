@@ -1,14 +1,7 @@
 PARAMETER.NAME,DOWNLOAD,SENSOR_DATASET,FREQUENCY,URL,DATASET.ID,GRID.VARIABLE,START_DATE,STOP_DATE,TIMESTEPS,BLOCKSIZE,Summaries,MaskForOceanColor
-Chlorophyll_A_ESAOCCCI_8Day,YES,ESA OC CCI,8day,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-8d-v5-0,chlor_a,9/4/1997,10/28/2018,965,10000,mean;q05;q95;sd,TRUE
+Chlorophyll_A_ESAOCCCI_8Day,YES,ESA OC CCI,8day,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-8d-v5-0,chlor_a,9/4/1997,12/26/2020,1074,10000,mean;q05;q95;sd,TRUE
+Chlorophyll_A_ESAOCCCI_Monthly,YES,ESA OC CCI,Monthly,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-monthly-v5-0,chlor_a,9/4/1997,12/1/2020,280,10000,mean;q05;q95;sd,TRUE
 Chlorophyll_A_ESAOCCCI_Clim,YES,ESA OC CCI,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-1998-2017-clim,chlor_a,CumMean_1998_2017,CumMean_1998_2017,1,99999999,NA,TRUE
 SST_CRW_Clim,YES,Coral Reef Watch,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v1_0_1985-2018-clim,analysed_sst,CumMean_1985_2018,CumMean_1985_2018,1,99999999,NA,FALSE
 SST_CRW_Monthly,YES,Coral Reef Watch,Monthly,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v3_1_monthly,sea_surface_temperature,1/31/1985,3/31/2021,435,10000,mean;q05;q95;sd,FALSE
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
-,,,,,,,,,,,,
+SST_CRW_Daily,YES,Coral Reef Watch,Daily,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v1_0,analysed_sst,1/1/1985,3/8/2021,13216,10000,mean;q05;q95;sd,FALSE

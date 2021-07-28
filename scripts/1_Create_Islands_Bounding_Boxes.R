@@ -17,29 +17,34 @@ library(rgeos)
 library(sf)
 library(maps)
 
-load('data/SURVEY MASTER.RData'); df = SURVEY_MASTER
+load('data/catch_location_date.Rdata'); df = catch_grid
 
-df$lon = df$LONGITUDE_LOV
-df$lat = df$LATITUDE_LOV
+df$lon = df$Lon
+df$lat = df$Lat
+
+df$REGION = "MHI"
+df$ISLAND = df$Island
 
 drop_LatLonNAs = unique(c(which(is.na(df$lon)), which(is.na(df$lat))))
 if(length(drop_LatLonNAs) > 0) df = df[-drop_LatLonNAs,]
 dim(df)
+
+df$lon = ifelse(df$lon > 180, df$lon - 360, df$lon)
 
 ###############
 ### mapping ###
 ###############
 
 unique(df$REGION)
-region = unique(df$REGION)[5]
+region = unique(df$REGION)
 
 df %>%
   subset(REGION == region) %>%
   group_by(ISLAND) %>%
-  summarise(RIGHT_XMAX = min(lon)-0.25,
-            LEFT_XMIN = max(lon)+0.25,
-            TOP_YMAX = min(lat)-0.25,
-            BOTTOM_YMIN = max(lat)+0.25) %>%
+  summarise(RIGHT_XMAX = min(lon)-0.1,
+            LEFT_XMIN = max(lon)+0.1,
+            TOP_YMAX = min(lat)-0.1,
+            BOTTOM_YMIN = max(lat)+0.1) %>%
   ggplot() +
   annotation_map(map_data("world")) +
   geom_point(data = df %>% subset(REGION == region), aes(lon, lat, color = ISLAND), alpha = 0.5) +
@@ -50,7 +55,7 @@ df %>%
     ymax = TOP_YMAX,
     fill = ISLAND,
     color = ISLAND), alpha = 0.2) +
-  facet_wrap(.~ISLAND, scales = "free") +
+  # facet_wrap(.~ISLAND, scales = "free") +
   theme_void() +
   theme(legend.position = "none")
 
@@ -60,10 +65,10 @@ df %>%
 
 boxes = df %>%
   group_by(ISLAND) %>%
-  summarise(RIGHT_XMAX = min(lon)-0.25,
-            LEFT_XMIN = max(lon)+0.25,
-            TOP_YMAX = min(lat)-0.25,
-            BOTTOM_YMIN = max(lat)+0.25)
+  summarise(RIGHT_XMAX = min(lon)-0.1,
+            LEFT_XMIN = max(lon)+0.1,
+            TOP_YMAX = min(lat)-0.1,
+            BOTTOM_YMIN = max(lat)+0.1)
 
 df_frame = df[,c("REGION", "ISLAND")]
 
@@ -76,4 +81,5 @@ colnames(df)[2] = "ISLAND.CODE"
 
 df$ISLAND.CODE = gsub(" ", "_", df$ISLAND.CODE)
 
-# write_csv(df, 'data/Island_Extents.csv')
+write_csv(df, 'data/Island_Extents.csv')
+
