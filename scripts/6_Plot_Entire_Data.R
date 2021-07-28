@@ -97,9 +97,14 @@ p2 + p1
 
 load("C:/Users/Kisei/eds_workshop_2021/outputs/Timeseries_2021-07-27.Rdata")
 
+SM[SM == -9991] <- NA
+
 sm = SM %>%
   subset(SP == "Black Marlin") %>%
-  group_by(ISLAND, SECTOR, SP, DATE_) %>%
-  summarise(sst = mean(mean_SST_CRW_Daily_MO01, na.rm = T))
+  group_by(ISLAND,
+           DATE_,
+           SECTOR, SP) %>%
+  summarise(sst = mean(mean_SST_CRW_Daily_MO01, na.rm = T)) %>%
+  na.omit()
 
 
