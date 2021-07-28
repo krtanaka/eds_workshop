@@ -20,7 +20,7 @@ library(acss)
 
 # Library Calls and Function Definition
 source("scripts/EDS_HelperFunctions.R")
-source('/mnt/ldrive/ktanaka/eds_workshop_2021/scripts/ExpandingExtract.R')
+# source('/mnt/ldrive/ktanaka/eds_workshop_2021/scripts/ExpandingExtract.R')
 
 # Setup ERRDAP Cache
 cache_setup(temp_dir = TRUE)
@@ -41,7 +41,7 @@ uP = unique(ParamDF$PARAMETER.NAME)[c(2,5)]; uP # static and dynamic SST and chl
 
 # path to store ERDDAP nc files
 EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "EDS/") # w/o VPN
-EDSpath = paste0("/mnt/ldrive/ktanaka/EDS/") # w/o VPN
+# EDSpath = paste0("/mnt/ldrive/ktanaka/EDS/") # w/o VPN
 
 if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
 

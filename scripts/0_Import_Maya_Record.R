@@ -68,7 +68,7 @@ mayas_islands %>%
 write_csv(mayas_islands, "data/Mayas_Islands.csv")
 
 # Import Maya's catch records
-catch <- read_csv("data/Reference Spreadsheet - Sheet10.csv")
+catch <- read_csv("data/Reference Spreadsheet - SectorDataSpecies.csv")
 
 # rename columns
 colnames(catch) = c("Sp_Common_Name", "Issue_Date", "Date_Caught", "Location", "Island", "Cardinal_Direction", "Island_Sector")
