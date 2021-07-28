@@ -11,8 +11,8 @@ load("outputs/Timeseries_2021-07-27.Rdata"); SM[SM == -9991] <- NA
 # pick species
 species = unique(SM$SP)[1]; species
 
-# choose variable...
-variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[2]
+# choose variable
+variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[1]
 
 # subset catch data
 if (variable == "SST_CRW_Monthly") {
