@@ -36,13 +36,14 @@ load('data/catch_location_date.Rdata');
 SM = catch_grid;
 SM$REGION = "MHI";
 colnames(SM) = c("ISLAND", "SECTOR", "SP", "DATE_", "LONGITUDE_LOV", "LATITUDE_LOV", "REGION")
-SM = SM %>% subset(ISLAND != "Molokai")
+# SM = SM %>% subset(ISLAND != "Oahu")
 
 SM$ISLAND = gsub(" ", "_", SM$ISLAND)
 
 SM$LON = SM$LONGITUDE_LOV
 SM$LAT = SM$LATITUDE_LOV
 SM$DATE_R = mdy(SM$DATE_)
+SM = SM %>% na.omit()
 
 #############################################
 ### drop data points with missing lat lon ###
@@ -60,7 +61,7 @@ BB_ISL = read.csv("data/Island_Extents.csv"); unique(BB_ISL$ISLAND.CODE)
 ### Build list of target environmental variables ###
 ####################################################
 paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/")
-parameters = c("SST_CRW_Daily", "SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_8Day", "Chlorophyll_A_ESAOCCCI_Monthly"); parameters # select only dynamic variables
+parameters = c("SST_CRW_Daily", "Chlorophyll_A_ESAOCCCI_8Day"); parameters # select only dynamic variables
 
 #########################################
 ### Read EDS Parameter/Variable Table ###
@@ -258,12 +259,15 @@ for(parameter_i in 1:length(parameters)){
       }
 
       #TimeSeries Pull Indices
+      ijk$t_01mo = ijk$t_k - (30/tstep-1)
       ijk$t_03mo = ijk$t_k - (90/tstep-1)
       ijk$t_01yr = round(ijk$t_k-(1*365.25/tstep-1))
 
       ijk[,c("t_k",
+             "t_01mo",
              "t_03mo",
              "t_01yr")][which(ijk[,c("t_k",
+                                     "t_01mo",
                                      "t_03mo",
                                      "t_01yr")] < 1, arr.ind = T)] = 1
 
@@ -276,6 +280,7 @@ for(parameter_i in 1:length(parameters)){
 
         if(!paramsum.name %in% substr(names(SM), 1, nchar(paramsum.name))){
 
+          eval(parse(text = paste0("SM$",paramsum.name,"_MO01=-9991")))
           eval(parse(text = paste0("SM$",paramsum.name,"_MO03=-9991")))
           eval(parse(text = paste0("SM$",paramsum.name,"_YR01=-9991")))
 
@@ -286,10 +291,15 @@ for(parameter_i in 1:length(parameters)){
 
           # sumpt_i = 1
 
+          ts_01mo = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_01mo[sumpt_i]:ijk$t_k[sumpt_i]]
           ts_03mo = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_03mo[sumpt_i]:ijk$t_k[sumpt_i]]
           ts_01yr = rawvar[ijk$x_i[sumpt_i], ijk$y_j[sumpt_i], ijk$t_01yr[sumpt_i]:ijk$t_k[sumpt_i]]
+
+          t_01mo = t[ijk$t_01mo[sumpt_i]:ijk$t_k[sumpt_i]]
           t_03mo = t[ijk$t_03mo[sumpt_i]:ijk$t_k[sumpt_i]]
           t_01yr = t[ijk$t_01yr[sumpt_i]:ijk$t_k[sumpt_i]]
+
+          eval(parse(text = paste0("SM$", paramsum.name, "_MO01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_01mo, na.rm = T)")))
           eval(parse(text = paste0("SM$", paramsum.name, "_MO03[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_03mo, na.rm = T)")))
           eval(parse(text = paste0("SM$", paramsum.name, "_YR01[SM_i[sumpt_i]] = ", paramsum[sum_i], "(x = ts_01yr, na.rm = T)")))
 
@@ -321,70 +331,6 @@ SM[SM == -9991] <- NA
 colnames(SM) = gsub("_SST_CRW_Daily_", "_SST_Daily_", colnames(SM))
 colnames(SM) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(SM))
 
-vis_miss(SM[,c(12:19)])
-vis_miss(SM[,c(20:dim(SM)[2])])
-
-detach("package:plyr", unload = TRUE)
-n = SM %>%
-  mutate(ID = paste0(SP, "_", ISLAND, "_", SECTOR),
-                    ID = gsub(" ", "_", ID)) %>%
-  group_by(ID) %>%
-  summarise(n = n()) %>%
-  subset(n > 100)
-good_sites = n$SITE
-
-b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
-                  lon2 = max(pretty(SM$LON)),
-                  lat1 = min(pretty(SM$LAT)),
-                  lat2 = max(pretty(SM$LAT)),
-                  resolution = 2)
-
-b = fortify.bathy(b)
-
-sd = SM %>%
-  subset(SITE %in% good_sites) %>%
-  group_by(SITE) %>%
-  mutate(sd = median(sd_sst_YR01)) %>%
-  ggplot(aes(x = sd_sst_YR01, y = SITE , fill = sd, color = sd)) +
-  geom_joy(scale = 3, alpha = 0.8, size = 0.01) +
-  ylab(NULL) +
-  coord_fixed(ratio = 0.06) +
-  ggdark::dark_theme_minimal() +
-  scale_fill_gradientn(colours = matlab.like(length(good_sites)), "") +
-  scale_color_gradientn(colours = matlab.like(length(good_sites)), "") +
-  theme(legend.position = "none",
-        axis.title.x = element_blank()) +
-  ggtitle("Obs specific SST sd year_1", )
-
-sites_with_high_sd = SM %>%
-  subset(SITE %in% good_sites) %>%
-  group_by(SITE) %>%
-  summarise(sd = median(sd_sst_YR01)) %>%
-    top_n(sd, 3)
-
-map = SM %>%
-  subset(SITE %in% good_sites) %>%
-  group_by(SITE) %>%
-  summarise(lon = mean(LON),
-            lat = mean(LAT),
-            sd = median(sd_sst_YR01))
-
-map = ggplot() +
-  geom_point(data = map, aes(x = lon, y = lat),
-             alpha = 0.3, size = 5) +
-  geom_text_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, ""))) +
-  geom_contour(data = b,
-               aes(x = x, y = y, z = z),
-               breaks = seq(-8000, 0, by = 200),
-               size = c(0.05),
-               alpha = 0.8,
-               colour = topo.colors(3310)) +
-  ggdark::dark_theme_minimal() +
-  # theme_void() +
-  theme(legend.position = "none",
-        axis.title = element_blank()) +
-  coord_fixed()
-
-png(paste0("/Users/", Sys.info()[7], "/Desktop/map_sd.png"),units = "in", res = 100,  height = 6, width = 10)
-sd + map
-dev.off()
+names(SM)
+vis_miss(SM[,c(12:23)])
+vis_miss(SM[,c(24:dim(SM)[2])])
