@@ -13,14 +13,14 @@ source("scripts/ExpandingExtract.R")
 
 # see what you downloaded
 var = list.files(paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/"))[6]
-var = list.files(paste0("/mnt/ldrive/ktanaka/EDS/DataDownload/"))[1]
+# var = list.files(paste0("/mnt/ldrive/ktanaka/EDS/DataDownload/"))[1]
 
 # extract entire monthly sst data -----------------------------------------
 source <- list.files(paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/", var, "/Island_Level_Data/"), pattern = '\\.nc$')
 source <- paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/", var, "/Island_Level_Data/", source)
 
-source <- list.files(paste0("/mnt/ldrive/ktanaka/EDS/DataDownload/", var, "/Island_Level_Data/"), pattern = '\\.nc$')
-source <- paste0("/mnt/ldrive/ktanaka/EDS/DataDownload/", var, "/Island_Level_Data/", source)
+# source <- list.files(paste0("/mnt/ldrive/ktanaka/EDS/DataDownload/", var, "/Island_Level_Data/"), pattern = '\\.nc$')
+# source <- paste0("/mnt/ldrive/ktanaka/EDS/DataDownload/", var, "/Island_Level_Data/", source)
 
 ### check EDS parameter table, set first date ###
 eds_parameter = read.csv("data/EDS_parameters.csv", stringsAsFactors = F)
