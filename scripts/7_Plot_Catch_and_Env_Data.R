@@ -3,6 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(patchwork)
 library(data.table)
+library(ggpubr)
 
 rm(list = ls())
 
@@ -16,7 +17,7 @@ species_list = unique(SM$SP)
 
 for (species in 1:length(species_list)) {
 
-  species = 1
+  # species = 3
 
   print(paste0("Working on ", species_list[species], "..."))
 
@@ -33,6 +34,9 @@ for (species in 1:length(species_list)) {
                SECTOR, SP) %>%
       summarise(sst = mean(mean_SST_CRW_Daily_MO01, na.rm = T)) %>%
       na.omit()
+
+    label = "SST"
+
   }
 
   if (variable == "Chlorophyll_A_ESAOCCCI_Monthly") {
@@ -44,18 +48,21 @@ for (species in 1:length(species_list)) {
                SECTOR, SP) %>%
       summarise(sst = mean(mean_Chlorophyll_A_ESAOCCCI_8Day_MO01, na.rm = T)) %>%
       na.omit()
+
+    label = "chl_a"
+
   }
 
-  data.table::setDT(sm)[, paste0("DATE_", 1:3) := tstrsplit(DATE_, "/")]
+  setDT(sm)[, paste0("DATE_", 1:3) := tstrsplit(DATE_, "/")]
   colnames(sm) = c("island", "date", "sector", "species", "mean", "month", "day", "year")
   sm$x = nchar(sm$month)
   sm$month = ifelse(sm$x == "1", paste0("0", sm$month), sm$month)
 
   species_island = NULL
 
-  for (i in 1:length(unique(sm$ISLAND))) {
+  for (i in 1:length(unique(sm$island))) {
 
-    i = 1
+    # i = 1
 
     island = unique(sm$island)[i]
     sectors = sm %>% subset(island == island)
@@ -118,41 +125,46 @@ for (species in 1:length(species_list)) {
 
     df_all = df_all %>% subset(sector %in% sectors)
 
-    df_all %>%
-      group_by(month, sector) %>%
-      summarise(mean = mean(mean, na.rm = T)) %>%
-      ggplot(aes(month, mean, color = sector, group = sector)) +
-      geom_point() +
-      geom_line() +
-      geom_point(data = sm, aes(month, mean), size = 5) +
-      # facet_wrap(~sector) +
-      # scale_color_manual(values = matlab.like(length(unique(df_all$sector))), "") +
-      # ggdark::dark_theme_minimal() +
-      theme_minimal() +
-      facet_wrap(.~sector) +
-      ggtitle(paste0(island, "_", species, "_", variable))
+    df_all$island = island
 
-    df_all %>%
-      group_by(year, sector) %>%
-      summarise(mean = mean(mean)) %>%
-      ggplot(aes(year, mean, color = sector, group = sector)) +
-      geom_point() +
-      geom_line() +
-      geom_point(data = sm, aes(year, mean), size = 3) +
-      scale_x_discrete(breaks = round(seq(min(df_all$year), max(df_all$year), by = 10), 1)) +
-      # scale_color_manual(values = matlab.like(length(unique(df_all$sector))), "") +
-      # ggdark::dark_theme_minimal() +
-      theme_minimal() +
-      # facet_wrap(.~sector) +
-      ggtitle(paste0(island, "_", species, "_", variable))
+    species_island = rbind(species_island, df_all)
 
   }
 
+  p1 = species_island %>%
+    group_by(month, sector, island) %>%
+    summarise(mean = mean(mean, na.rm = T)) %>%
+    ggplot(aes(month, mean, color = sector, group = sector)) +
+    geom_point() +
+    geom_line() +
+    geom_point(data = sm, aes(month, mean), size = 2, color = "red") +
+    scale_x_discrete(breaks = c("03", "06", "09")) +
+    ylab(label) +
+    # scale_color_manual(values = matlab.like(length(unique(df_all$sector))), "") +
+    # ggdark::dark_theme_minimal() +
+    theme_pubr() +
+    facet_grid(island ~ sector) +
+    ggtitle(species_list[species])
 
+  p2 = species_island %>%
+    group_by(year, sector, island) %>%
+    summarise(mean = mean(mean)) %>%
+    ggplot(aes(year, mean, color = sector, group = sector)) +
+    geom_point() +
+    geom_line() +
+    geom_point(data = sm, aes(year, mean), size = 2, color = "red") +
+    scale_x_discrete(breaks = round(seq(min(df_all$year), max(df_all$year), by = 20), 1)) +
+    ylab(label) +
 
+    # scale_color_manual(values = matlab.like(length(unique(df_all$sector))), "") +
+    # ggdark::dark_theme_minimal() +
+    theme_pubr() +
+    facet_grid(island ~ sector) +
+    ggtitle(species_list[species])
 
+  pdf(paste0('outputs/', species_list[species], '_', variable, '.pdf'), height = 5, width = 10)
+  print(p1 + p2)
+  dev.off()
 
 
 }
-
-
