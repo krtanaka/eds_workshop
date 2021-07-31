@@ -58,8 +58,8 @@ for (species in 1:length(species_list)) {
     i = 1
 
     island = unique(sm$island)[i]
-    sector = sm %>% subset(island == island)
-    sector = unique(sector$sector)
+    sectors = sm %>% subset(island == island)
+    sectors = unique(sectors$sector)
 
     # choose island...
     # island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[1]
@@ -116,8 +116,7 @@ for (species in 1:length(species_list)) {
 
     }
 
-
-    df_all = subset(df_all, df_all$sector %in% sector)
+    df_all = df_all %>% subset(sector %in% sectors)
 
     df_all %>%
       group_by(month, sector) %>%
@@ -125,7 +124,7 @@ for (species in 1:length(species_list)) {
       ggplot(aes(month, mean, color = sector, group = sector)) +
       geom_point() +
       geom_line() +
-      geom_point(data = sm_i, aes(month, mean), size = 5) +
+      geom_point(data = sm, aes(month, mean), size = 5) +
       # facet_wrap(~sector) +
       # scale_color_manual(values = matlab.like(length(unique(df_all$sector))), "") +
       # ggdark::dark_theme_minimal() +
