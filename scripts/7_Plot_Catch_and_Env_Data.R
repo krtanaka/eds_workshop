@@ -116,7 +116,8 @@ for (species in 1:length(species_list)) {
 
     }
 
-    df_all = df_all %>% subset(sector %in% sector)
+
+    df_all = subset(df_all, df_all$sector %in% sector)
 
     df_all %>%
       group_by(month, sector) %>%
