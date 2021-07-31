@@ -1,14 +1,12 @@
 Species Common Name,Issue date,Date caught,Location caught,Island,Cardinal Direction,Island Sector
-Etelis Boweni,July 2021,n/a,n/a,n/a,n/a,n/a
-Bigfin Squid,July 2021,06/15/2021,n/a,Maui,n/a,WI
-Yellowtail amberjack,March 2021,n/a,n/a,n/a,n,n/a
+Yellowtail amberjack,March 2021,n/a,n/a,n/a,North,n/a
 Humpback snapper,January 2021,11/14/2020,"Kaena point, Oahu",Oahu,North,N
 Yellowtail amberjack,January 2021,10/18/2020,n/a,n/a,n/a,n/a
 Humpback snapper,October 2020,n/a,n/a,n/a,n/a,n/a
 Yellowtail amberjack,October 2020,9/16/2020,"North shore, Oahu",Oahu,North,NW
 Yellowtail amberjack,May 2020,03/20/2020,North shore oahu,Oahu,North,NW
 Humpback snapper,January 2020,n/a,n/a,n/a,n/a,n/a
-Knifejaw,Winter 2019-20,n/a,n/a,n/a,n/a,n/a
+Knifejaw,December 2019,n/a,n/a,n/a,n/a,n/a
 Yellowtail amberjack,August 2019,08/16/2019,"Waimea, Oahu",Oahu,North,NW
 Yellowtail amberjack,August 2019,08/16/2019,"Waimea, Oahu",Oahu,North,NW
 Black Marlin,May 2019,03/14/2019,Kona,Big island,West,W
@@ -17,10 +15,9 @@ Butagachi,April 2019,04/15/2019,Honokowai,Maui,Northwest,NW
 Black Marlin,March 2019,03/16/2019,Kauai,Kauai,n/a,WI
 Yellowtail amberjack,August 2018,08/16/2018,n/a,Oahu,n/a,WI
 Black Marlin,October 2017,n/a,n/a,n/a,n/a,n/a
-Oriental bonito,Summer 2017,07/15/2017,Maui,Maui,n/a,WI
+Oriental bonito,July 2017,07/15/2017,Maui,Maui,n/a,WI
 Yellowtail amberjack,June 2017,06/16/2017,"East shore, Oahu",Oahu,East,E
-Hybird papio,Spring 2017,n/a,n/a,n/a,n/a,n/a
-Sea bass,April 2017,01/19/1963,"Barbers point, Oahu",Oahu,South,S
+Giant grouper,April 2017,01/19/1963,"Barbers point, Oahu",Oahu,South,S
 Eastern pacific bonito,April 2017,n/a,n/a,n/a,n/a,n/a
 Yellowtail amberjack,February 2017,01/16/2017,n/a,n/a,n/a,n/a
 Oriental bonito,December 2016,12/16/2016,Off north shore of Maui,Maui,North,N
@@ -51,7 +48,6 @@ Black Marlin,June 2014,04/05/2014,Kona,Big island,West,W
 Black Marlin,June 2014,04/03/2014,Kona,Big island,West,W
 Black Marlin,June 2014,04/14/2014,Lahaina,Maui,Northwest,NW
 Black Marlin,May 2014,03/23/2014,Kona,Kona,West,W
-Hapu'upu'u,April 2014,n/a,n/a,n/a,n/a,n/a
 Black Marlin,March 2014,01/10/2014,Kona,Kona,West,W
 Black Marlin,February 2014,12/30/2013,Kona,Big island,West,W
 Black Marlin,February 2014,12/27/2013,Kona,Big island,West,W
@@ -65,9 +61,7 @@ Black Marlin,February 2014,12/3/2013,Kona,Big island,West,W
 Black Marlin,February 2014,12/2/2013,Kona,Big island,West,W
 Black Marlin,February 2014,12/2/2013,Kona,Big island,West,W
 Black Marlin,February 2014,12/16/2013,Kona,Big island,West,W
-Bluelined triggerfish,January 2014,03/27/2013,Olowalu,Maui,Southwest,SW
 Butagachi,January 2014,11/15/2013,"North shore, Oahu",Oahu,Northwest,NW
-Bigfin squid,January 2014,10/18/2013,"Hawaii kai, Oahu",Oahu,East,E
 Whitemargin unicornfish,January 2014,07/03/2013,"North Kona, Hawaii",Hawaii,North,N
 Louvar,September 2013,07/22/2013,"Kona, Hawaii",Hawaii,West,W
 Threadfin perchlet,August 2013,08/16/2013,"Kaena point, oahu",Oahu,West,NW
@@ -118,7 +112,6 @@ Black Marlin,March 2013,12/15/2012,Kona,Big Island,West,W
 Black Marlin,March 2013,12/18/2012,Kona,Big Island,West,W
 Black Marlin,March 2013,12/29/2012,Kona,Big Island,West,W
 Yellowtail amberjack,February 2013,12/29/2012,"Kaneohe, Oahu",Oahu,East,E
-Sea bass,February 2013,11/03/2012,Penguin banks,Molokai,Southwest,SW
 Goldflag snapper,February 2013,12/29/2013,Penguin banks,Molokai,Southwest,SW
 Spotted mackerel,February 2013,05/14/2012,North shore molokai,Molokai,North,N
 Oriental bonito,February 2013,05/14/2012,North shore molokai,Molokai,North,N
@@ -235,17 +228,14 @@ Black Marlin,July 2012,05/02/2012,Kona,Big Island,West,W
 Elbow crab,July 2012,07/15/2012,Kaneohe bay sandbar,Oahu,East,E
 Green jack,June 2012,3/27/2012,off Hawaii Kai,Oahu,East,SE
 Mirror Dory,June 2012,06/16/2012,"off Molokai, 130 fathoms of water",Molokai,n/a,WI
-Bluelined triggerfish,March 2012,2/6/2012,"Kanaio coast, Maui",Maui,Southwest,SW
-Bridled cardinalfish,December 2011,12/16/2011,"South point, Oahu",Oahu,South,S
-Hapu'upu'u,December 2011,n/a,n/a,n/a,n/a,n/a
-Snakefish,December 2011,06/30/2011,"ku'au, Oahu",Oahu,,
+Snakefish,December 2011,06/30/2011,"ku'au, Oahu",Maui,North,N
 Finescale triggerfish,December 2011,11/15/2011,n/a,n/a,n/a,n/a
-Green jack,November 2011,06/08/2011,Moanalua bay,Oahu,,
+Green jack,November 2011,06/08/2011,Moanalua bay,Oahu,Southeast,SE
 Freckle driftfish,August 2011,08/16/22011,"Off ewa beach, Oahu",Oahu,South,S
 Giant squid,August 2011,08/16/2011,Mokuleia,Oahu,North,NW
 Shadowfin soldierfish,June 2011,04/29/2011,Kailua pier,Big island,West,W
 Black Marlin,May 2011,03/10/2011,Kona,Big island,West,W
-Humpback snapper,March 2011,02/20/2011,n/a,,,
+Humpback snapper,March 2011,02/20/2011,n/a,n/a,n/a,n/a
 Oriental bonito,February 2011,02/14/2011,Outside kona,Big island,West,W
 Shadowfin soldierfish,February 2011,1/20/2011,Kailua Pier,Big island,West,W
 Sling jaw,July 2010,07/15/2010,Kaneohe Bay,Oahu,East,E
@@ -260,7 +250,7 @@ Spotted knifejaw,January 2010,03/17/2009,"outside Yokohama, waianae coast",Oahu,
 Black menpachi,August 2009,n/a,n/a,n/a,n/a,n/a
 Mirror Dory,July 2009,n/a,n/a,n/a,n/a,n/a
 Goldflag snapper,April 2009,04/15/2009,Penguin Bank,Molokai,Southwest,SW
-Goldflag snapper,April 2009,04/15/2009,Penguin Bank,,Southwest,SW
+Goldflag snapper,April 2009,04/15/2009,Penguin Bank,Molokai,Southwest,SW
 Tripletail,January 2009,01/15/2009,Off Kona,Big island,West,W
 Bluestriped chub,January 2009,n/a,n/a,n/a,n/a,
 Black marlin,December 2008,10/01/2009,"Kona, Hawaii",Big island,West,W
@@ -271,10 +261,9 @@ Tripletail,October 2007,10/16/2007,"Kona, Hawaii",Big island,West,W
 Knifejaw,January 2007,11/19/2006,n/a,n/a,n/a,
 Whitefin trevally,January 2007,01/15/2007,Haleiwa,Oahu,North,NW
 Bluestriped chub,January 2007,04/23/2006,"Black point, Kohala",Big island,North,N
-Golden kalekale,January 2007,11/26/2006,"Waianae, Oahu",Oahu,West,W
 Tripletail,January 2007,01/30/2006,Barbers point,Oahu,South,S
 Whitemargin unicornfish,January 2007,06/11/2006,"South point, Niihau",Niihau,South,S
-Unknown billfish,August 2004,n/a,BO buoy oahu,Oahu,,S
+Unknown billfish,August 2004,n/a,BO buoy oahu,Oahu,South,S
 Finescale triggerfish,December 2003,09/01/2002,Puako,Big island,Northwest,NW
 Sidespot goatfish,December 2003,01/14/2003,"Hana, maui",Maui,East,E
 Black Marlin,November 2003,09/11/2003,Kona,Big island,West,W
@@ -290,7 +279,6 @@ Green jack,May 2002,05/19/2002,Hilo bay,Big island,East,E
 Green jack,May 2002,02/05/2002,Pearl harbor,Oahu,South,S
 Knifejaw,December 2001,12/16/2001,South shore kauai,Kauai,South,S
 Knifejaw,December 2001,12/26/2001,South shore kauai,Kauai,South,S
-Deepsea catfish,October 2001,01/11/2001,Penguin banks,Molokai,Southwest,SW
 Black Marlin,September 2001,n/a,n/a,n/a,n/a,n/a
 Hybrid jack,September 2001,09/15/2001,"North shore, oahu",Oahu,North,NW
 Green jack,January 2001,10/8/2000,Hilo bay,Big island,East,E
@@ -299,24 +287,20 @@ Bluestriped chub,March 2000,01/01/2000,"barbers point, Oahu",Oahu,South,S
 Blue mackerel,March 2000,03/16/2000,Penguin banks,Molokai,Southwest,SW
 Black Marlin,November 1999,07/25/1999,n/a,n/a,n/a,n/a
 Frogfish,November 1999,03/04/1999,"Ka'u coast, big island",Big island,Southeast,SE
-Hawaiian seabass,November 1999,02/17/1999,Kaneohe,Oahu,East,SE
 Black Marlin,October 1999,08/27/1999,Hawaii,n/a,n/a,n/a
 Green jack,July 1999,07/15/1999,Oahu,Oahu,n/a,WI
-Hawaiian grouper,April 1999,n/a,n/a,n/a,n/a,n/a
-Hawaiian grouper,April 1999,n/a,n/a,n/a,n/a,n/a
 Butagachi,December 1998,12/16/1998,"Ewa beach, Oahu",Oahu,South,S
-Sea bass,December 1998,01/01/1955,"Hauula, Oahu",Oahu,East,NE
+Giant grouper,December 1998,01/01/1955,"Hauula, Oahu",Oahu,East,NE
 Black Marlin,October 1998,10/16/1998,"Kona, Hawaii",Big island,West,W
 Black Marlin,August 1998,6/20/1998,n/a,n/a,n/a,
 Black Marlin,August 1998,08/16/1998,Kona,Big island,West,W
-Black Marlin,August 1997,n/a,n/a,,,n/a
+Black Marlin,August 1997,n/a,n/a,n/a,n/a,n/a
 Whitemargin unicornfish,July 1997,n/a,n/a,n/a,n/a,n/a
-Sea bass,July 1997,07/15/1997,South shore Oahu,Oahu,South,S
+Giant grouper,July 1997,07/15/1997,South shore Oahu,Oahu,South,S
 Black Marlin,April 1997,02/21/1997,Kona,Big island,West,W
 Giant squid,December 1996,12/01/1996,Kona,Big island,West,W
 Black Marlin,December 1996,12/01/1996,Kona,Big island,West,W
 Black marlin,October 1996,08/15/1996,n/a,n/a,n/a,n/a
-Channel catfish,February 1996,02/14/1996,kaneohe bay,Oahu,East,E
 Black marlin,November 1995,09/25/1995,Honokohau harbor,Big island,West,W
 Black Marlin,June 1995,n/a,J buoy ,Oahu,Northwest,NW
 Bluestriped chub,December 1994,12/16/1994,North shore maui,Maui,North,N
@@ -327,7 +311,6 @@ Black Marlin,August 1994,06/21/1994,n/a,n/a,n/a,n/a
 Spotted Knifejaw,July 1994,07/15/1994,Kalaea point at kalaupapa peninsula,Molokai,North,N
 Black Marlin,August 1993,08/16/1993,Northwest of Keahole,Big island,Northwest,NW
 Black Marlin,August 1993,06/13/1993,Big island,Big island,West,W
-Neon flying squid,July 1993,07/15/1993,Maui,Maui,West,W
 Black Marlin,June 1993,06/16/1993,Lahaina,Maui,Northwest,NW
 Spotted Knifejaw,August 1992,08/16/1992,Kalaupapa,Molokai,North,N
 Black Marlin,May 1992,05/19/1992,Kona,Big island,West,W
@@ -336,7 +319,7 @@ Butagachi,March 1992,03/16/1992,west coast Hawaii,,West,W
 Black Marlin,February 1992,02/14/1992,Kona,Big island,West,W
 Black Marlin,February 1991,02/14/1991,top corner ledge northwest of keahole airport,Big island,West,W
 Black Marlin,May 1990,n/a,n/a,n/a,n/a,
-Giant sea bass,April 1990,n/a,n/a,n/a,n/a,
+Giant grouper,April 1990,n/a,n/a,n/a,n/a,
 Humpback snapper,March 1990,03/16/1990,n/a,n/a,n/a,n/a
 Black Marlin,"August 18, 1979",07/15/1979,Kona,Big island,West,W
 Black Marlin,"June 23, 1979",06/06/1979,Kona,Big island,West,W
