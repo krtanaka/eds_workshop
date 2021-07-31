@@ -2,6 +2,7 @@ library(colorRamps)
 library(ggplot2)
 library(dplyr)
 library(patchwork)
+library(data.table)
 
 rm(list = ls())
 
@@ -56,9 +57,9 @@ for (species in 1:length(species_list)) {
 
     i = 1
 
-    island = unique(sm$ISLAND)[i]
-    sm_i = sm %>% subset(ISLAND == island)
-    sector = unique(sm_i$SECTOR)
+    island = unique(sm$island)[i]
+    sector = sm %>% subset(island == island)
+    sector = unique(sector$sector)
 
     # choose island...
     # island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[1]
