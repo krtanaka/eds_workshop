@@ -11,9 +11,9 @@ variable = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_Monthly")[1]
 # choose island...
 island = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")[1]
 
+# import full environmental data
 load(paste0('outputs/', island, '_raw_', variable, '.RData'))
 
-species = unique(df_i$Sp_Common_Name)
 island_sectors = unique(df_i$Island_Sector)
 
 df_all = NULL
@@ -67,12 +67,13 @@ env_q = df_all %>%
   mutate(q10 = quantile(mean, probs = 0.1),
          q90 = quantile(mean, probs = 0.9))
 
+rm(df_all)
+
 isl = island
 
+
+# import species-catch data
 load("outputs/Timeseries_2021-07-29.Rdata"); SM[SM == -9991] <- NA
-
-# colnames(catch_grid) = c("island", "sector", "species", "date", "lon", "lat")
-
 setDT(SM)[, paste0("DATE_R", 1:3) := tstrsplit(DATE_R, "-")]
 colnames(SM)[36:38] = c("year", "month", "day")
 
