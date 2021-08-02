@@ -73,14 +73,14 @@ isl = island
 
 
 # import species-catch data
-load("outputs/Timeseries_2021-07-29.Rdata"); SM[SM == -9991] <- NA
+load("outputs/Timeseries_2021-07-29.Rdata")
+SM[SM == -9991] <- NA
 setDT(SM)[, paste0("DATE_R", 1:3) := tstrsplit(DATE_R, "-")]
 colnames(SM)[36:38] = c("year", "month", "day")
 
 df = SM %>%
   group_by(year, month, day, SP, ISLAND, SECTOR) %>%
   summarise(sst = mean(mean_SST_CRW_Daily_MO03, na.rm = T))
-  # distinct(year, month, day, species, island, sector, .keep_all = TRUE)
 
 df$catch = 1
 df = df %>% na.omit()
@@ -90,3 +90,4 @@ colnames(df)[4:6] = c("species", "island", "sector")
 df_env = merge(df, env_q)
 
 df_env$abnormal = ifelse(df_env$sst > df_env$q10 & df_env$sst < df_env$q90, "No", "Yes")
+table(df_env$abnormal)
