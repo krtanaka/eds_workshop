@@ -41,10 +41,7 @@ uP = unique(ParamDF$PARAMETER.NAME)[c(2,5)]; uP # static and dynamic SST and chl
 
 # path to store ERDDAP nc files
 EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "EDS/") # w/o VPN
-<<<<<<< HEAD
-=======
 # EDSpath = paste0("/mnt/ldrive/ktanaka/EDS/") # w/o VPN
->>>>>>> e07036aaa8f5d34706d6193f83c5a377a65b1a2f
 
 if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
 

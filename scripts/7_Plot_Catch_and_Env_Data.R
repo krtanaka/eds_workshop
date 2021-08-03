@@ -17,7 +17,7 @@ species_list = unique(SM$SP)
 
 for (species in 1:length(species_list)) {
 
-  # species = 3
+  # species = 21
 
   print(paste0("Working on ", species_list[species], "..."))
 
