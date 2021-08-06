@@ -17,6 +17,7 @@ library(lubridate)
 library(abind)
 library(plyr)
 library(acss)
+library(dplyr)
 
 # Library Calls and Function Definition
 source("scripts/EDS_HelperFunctions.R")
@@ -37,7 +38,7 @@ ParamDF = subset(ParamDF, DOWNLOAD == "YES")
 startwith = 1
 endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
-uP = unique(ParamDF$PARAMETER.NAME)[4:5]; uP # static and dynamic SST and chl_a
+uP = unique(ParamDF$PARAMETER.NAME)[4:6]; uP # static and dynamic SST and chl_a
 
 # path to store ERDDAP nc files
 EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "EDS/") # w/o VPN
