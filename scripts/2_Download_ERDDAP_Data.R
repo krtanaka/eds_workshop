@@ -28,6 +28,7 @@ closeAllConnections()
 
 # load your bounding boxes (Islands)
 Ibbox = read.csv("data/Island_Extents.csv", stringsAsFactors = F) # Updated Bounding boxes 2021
+Ibbox = Ibbox %>% subset(REGION == "MHI")
 uI = unique(Ibbox$ISLAND.CODE)[13]; uI
 
 # select ERDDAP data
@@ -36,7 +37,7 @@ ParamDF = subset(ParamDF, DOWNLOAD == "YES")
 startwith = 1
 endwith = nrow(ParamDF)
 ParamDF = ParamDF[startwith:endwith,]
-uP = unique(ParamDF$PARAMETER.NAME); uP # static and dynamic SST and chl_a
+uP = unique(ParamDF$PARAMETER.NAME)[4:5]; uP # static and dynamic SST and chl_a
 
 # path to store ERDDAP nc files
 EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "EDS/") # w/o VPN
