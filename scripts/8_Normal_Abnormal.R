@@ -15,7 +15,7 @@ df_env_MHI = NULL
 
 for (i in 1:length(islands)) {
 
-# i = 1
+  # i = 1
 
   # import full environmental data
   load(paste0('outputs/', islands[i], '_raw_', variable, '.RData'))
