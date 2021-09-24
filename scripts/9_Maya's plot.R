@@ -5,6 +5,8 @@ library(readr)
 library(viridis)
 library(TDPanalysis)
 
+# version 1
+
 catch <- read_csv("outputs/df_env_MHI.csv")
 
 catch$quant = ifelse(catch$abnormal == "Yes", "Abnormal", "Normal")
@@ -27,6 +29,8 @@ catch$mean_f = (catch$mean * 1.8) + 32 # Monthly mean SST from corresponding isl
 pdf("/Users/Kisei.Tanaka/Desktop/catch_sst.pdf", height = 7, width = 7)
 print(maya)
 dev.off()
+
+# Version 2
 
 catch <- read_csv("outputs/df_env_MHI.csv")
 catch$quant = ifelse(catch$abnormal == "Yes", "Abnormal", "Normal")
@@ -82,14 +86,15 @@ catch = catch %>%
             catch = n())
 
 (maya = ggplot() +
-    geom_jitter(data = df_all, aes(month, mean, color = "Monthly SST (1985-2019)"), alpha = 0.1, size = 2) +
+    geom_jitter(data = df_all, aes(month, mean, color = "Monthly SST (1985-2019)"), alpha = 0.1, size = 3) +
     geom_point(data = mean, aes(month, mean, color = "Mean SST"), size = 3) +
     geom_point(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", size = catch)) +
-    # scale_color_viridis_d("") +
+    scale_color_discrete("") +
     ggdark::dark_theme_classic() +
     coord_fixed(ratio = 2) +
     ylab("SST") +
-    xlab("Month") )
+    xlab("Month") +
+    ggtitle("Maya's plot"))
 
 pdf("/Users/Kisei/Desktop/catch_sst.pdf", height = 5, width = 10)
 print(maya)
