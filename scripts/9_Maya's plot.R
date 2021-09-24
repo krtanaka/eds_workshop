@@ -33,32 +33,43 @@ catch$quant = ifelse(catch$abnormal == "Yes", "Abnormal", "Normal")
 catch$date = paste0(catch$day, "/", catch$month, "/", catch$year)
 catch$doy = date.to.DOY(catch$date, format = "dd/mm/yyyy")
 
-load("outputs/Hawaii_raw_SST_CRW_Monthly.RData")
-df = df_i[,c(7:441)]
-df = as.data.frame(t(df))
-df$mean = rowMeans(df, na.rm = T)
-df <- tibble::rownames_to_column(df, "date")
-df = df[,c("date", "mean")]
-df$date = gsub("01-31", "02-01", df$date)
-df$date = gsub("02-31", "03-01", df$date)
-df$date = gsub("03-31", "04-01", df$date)
-df$date = gsub("04-31", "05-01", df$date)
-df$date = gsub("05-31", "06-01", df$date)
-df$date = gsub("06-31", "07-01", df$date)
-df$date = gsub("07-31", "08-01", df$date)
-df$date = gsub("08-31", "09-01", df$date)
-df$date = gsub("09-31", "10-01", df$date)
-df$date = gsub("10-31", "11-01", df$date)
-df$date = gsub("11-31", "12-01", df$date)
-df$date = gsub("12-31", "01-01", df$date)
-df$month = substr(df$date, 6, 7)
-df$year = substr(df$date, 1, 4)
+islands = c("Hawaii", "Kauai", "Kaula", "Lanai", "Maui", "Molokai", "Niihau", "Oahu")
 
-df = df %>%
+df_all = NULL
+
+for (i in 1:length(islands)) {
+
+  # i = 1
+
+  load(paste0("outputs/", islands[i], "_raw_SST_CRW_Monthly.RData"))
+
+  df = df_i[,c(7:441)]
+  df = as.data.frame(t(df))
+  df$mean = rowMeans(df, na.rm = T)
+  df <- tibble::rownames_to_column(df, "date")
+  df = df[,c("date", "mean")]
+  df$date = gsub("01-31", "02-01", df$date)
+  df$date = gsub("02-31", "03-01", df$date)
+  df$date = gsub("03-31", "04-01", df$date)
+  df$date = gsub("04-31", "05-01", df$date)
+  df$date = gsub("05-31", "06-01", df$date)
+  df$date = gsub("06-31", "07-01", df$date)
+  df$date = gsub("07-31", "08-01", df$date)
+  df$date = gsub("08-31", "09-01", df$date)
+  df$date = gsub("09-31", "10-01", df$date)
+  df$date = gsub("10-31", "11-01", df$date)
+  df$date = gsub("11-31", "12-01", df$date)
+  df$date = gsub("12-31", "01-01", df$date)
+  df$month = substr(df$date, 6, 7)
+  df$year = substr(df$date, 1, 4)
+  df$island = islands[i]
+
+  df_all = rbind(df_all, df)
+
+}
+
+df_all = df_all %>%
   subset(year %in% c(1991:2020))
-# %>%
-#   group_by(year, month) %>%
-#   summarise(sst = mean(mean))
 
 mean = df %>%
   group_by(month) %>%
@@ -71,11 +82,15 @@ catch = catch %>%
             catch = n())
 
 (maya = ggplot() +
-    geom_point(data = df, aes(month, mean, color = "Monthly SST (1985-2019)"), alpha = 0.5) +
-    geom_point(data = mean, aes(month, mean, color = "Mean SST")) +
+    geom_jitter(data = df_all, aes(month, mean, color = "Monthly SST (1985-2019)"), alpha = 0.1, size = 2) +
+    geom_point(data = mean, aes(month, mean, color = "Mean SST"), size = 3) +
     geom_point(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", size = catch)) +
-    ggdark::dark_theme_classic())
+    # scale_color_viridis_d("") +
+    ggdark::dark_theme_classic() +
+    coord_fixed(ratio = 2) +
+    ylab("SST") +
+    xlab("Month") )
 
-pdf("/Users/Kisei/Desktop/catch_sst.pdf", height = 7, width = 10)
+pdf("/Users/Kisei/Desktop/catch_sst.pdf", height = 5, width = 10)
 print(maya)
 dev.off()
