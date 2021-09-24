@@ -5,6 +5,8 @@ library(readr)
 library(viridis)
 library(TDPanalysis)
 
+# version 1
+
 catch <- read_csv("outputs/df_env_MHI.csv")
 
 catch$quant = ifelse(catch$abnormal == "Yes", "Abnormal", "Normal")
@@ -27,6 +29,8 @@ catch$mean_f = (catch$mean * 1.8) + 32 # Monthly mean SST from corresponding isl
 pdf("/Users/Kisei.Tanaka/Desktop/catch_sst.pdf", height = 7, width = 7)
 print(maya)
 dev.off()
+
+# Version 2
 
 catch <- read_csv("outputs/df_env_MHI.csv")
 catch$quant = ifelse(catch$abnormal == "Yes", "Abnormal", "Normal")
@@ -89,7 +93,8 @@ catch = catch %>%
     ggdark::dark_theme_classic() +
     coord_fixed(ratio = 2) +
     ylab("SST") +
-    xlab("Month") )
+    xlab("Month") +
+    ggtitle("Maya's plot"))
 
 pdf("/Users/Kisei/Desktop/catch_sst.pdf", height = 5, width = 10)
 print(maya)
