@@ -86,15 +86,18 @@ catch = catch %>%
             catch = n())
 
 (maya = ggplot() +
-    geom_jitter(data = df_all, aes(month, mean, color = "Monthly SST (1991-2020)"), alpha = 0.1, size = 2) +
-    geom_point(data = mean, aes(month, mean, color = "Mean SST (1991-2020)"), size = 3) +
+    # geom_jitter(data = df_all, aes(month, mean, color = "Monthly SST (1985-2019)"), alpha = 0.1, size = 3) +
+    geom_line(data = mean, aes(month, mean, color = "Mean SST", group = 1)) +
+    geom_point(data = mean, aes(month, mean, color = "Mean SST"), size = 3, shape = 17) +
+    geom_line(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", group = 1)) +
     geom_point(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", size = catch)) +
     scale_color_discrete("") +
     ggdark::dark_theme_classic() +
     coord_fixed(ratio = 2) +
     ylab("SST") +
     xlab("Month") +
-    ggtitle("Maya's plot"))
+    ggtitle("Maya's plot")+
+    guides(color = guide_legend(override.aes = list(shape = c(17, 16) ) ) ))
 
 pdf("/Users/Kisei/Desktop/catch_sst.pdf", height = 5, width = 10)
 print(maya)
