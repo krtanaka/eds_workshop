@@ -92,6 +92,7 @@ catch = catch %>%
     geom_line(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", group = 1)) +
     geom_point(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", size = Number_of_Catches)) +
     scale_color_discrete("") +
+    scale_size(breaks = c(1, 5, 10, 15, 20, 25)) +
     ggdark::dark_theme_classic() +
     coord_fixed(ratio = 2) +
     ylab("SST") +
