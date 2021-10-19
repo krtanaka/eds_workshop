@@ -80,17 +80,17 @@ mean = df %>%
   summarise(mean = mean(mean))
 
 catch = catch %>%
-  subset(island == "Hawaii" & quant == "Abnormal") %>%
+  subset(quant == "Abnormal") %>%
   group_by(month) %>%
   summarise(sst = mean(sst),
-            catch = n())
+            Number_of_Catches = n())
 
 (maya = ggplot() +
     # geom_jitter(data = df_all, aes(month, mean, color = "Monthly SST (1985-2019)"), alpha = 0.1, size = 3) +
     geom_line(data = mean, aes(month, mean, color = "Mean SST", group = 1)) +
     geom_point(data = mean, aes(month, mean, color = "Mean SST"), size = 3, shape = 17) +
     geom_line(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", group = 1)) +
-    geom_point(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", size = catch)) +
+    geom_point(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", size = Number_of_Catches)) +
     scale_color_discrete("") +
     ggdark::dark_theme_classic() +
     coord_fixed(ratio = 2) +
