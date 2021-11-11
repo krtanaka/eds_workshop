@@ -9,6 +9,7 @@ rm(list = ls())
 
 library(spatial)
 library(raster)
+library(rgdal)
 library(lubridate)
 library(ncdf4)
 library(dplyr)
@@ -54,7 +55,7 @@ BB_ISL = read.csv("data/Island_Extents.csv"); unique(BB_ISL$ISLAND.CODE)
 ####################################################
 ### Build list of target environmental variables ###
 ####################################################
-paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/Environmental Data Summary_Demo/DataDownload/")
+paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/")
 parameters = c("SST_CRW_Monthly", "Chlorophyll_A_ESAOCCCI_8Day"); parameters # select only dynamic variables
 
 #########################################
@@ -329,13 +330,13 @@ detach("package:plyr", unload = TRUE)
 n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 2)
 good_sites = n$SITE
 
-b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
-                  lon2 = max(pretty(SM$LON)),
-                  lat1 = min(pretty(SM$LAT)),
-                  lat2 = max(pretty(SM$LAT)),
-                  resolution = 2)
-
-b = fortify.bathy(b)
+# b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
+#                   lon2 = max(pretty(SM$LON)),
+#                   lat1 = min(pretty(SM$LAT)),
+#                   lat2 = max(pretty(SM$LAT)),
+#                   resolution = 4)
+#
+# b = fortify.bathy(b)
 
 sd = SM %>%
   subset(SITE %in% good_sites) %>%
@@ -369,12 +370,12 @@ map = ggplot() +
   geom_point(data = map, aes(x = lon, y = lat),
              alpha = 0.3, size = 5) +
   geom_text_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, ""))) +
-  geom_contour(data = b,
-               aes(x = x, y = y, z = z),
-               breaks = seq(-8000, 0, by = 200),
-               size = c(0.05),
-               alpha = 0.8,
-               colour = topo.colors(3310)) +
+  # geom_contour(data = b,
+  #              aes(x = x, y = y, z = z),
+  #              breaks = seq(-8000, 0, by = 200),
+  #              size = c(0.05),
+  #              alpha = 0.8,
+  #              colour = topo.colors(3310)) +
   ggdark::dark_theme_minimal() +
   # theme_void() +
   theme(legend.position = "none",
