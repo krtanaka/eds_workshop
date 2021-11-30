@@ -330,13 +330,13 @@ detach("package:plyr", unload = TRUE)
 n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 2)
 good_sites = n$SITE
 
-# b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
-#                   lon2 = max(pretty(SM$LON)),
-#                   lat1 = min(pretty(SM$LAT)),
-#                   lat2 = max(pretty(SM$LAT)),
-#                   resolution = 4)
-#
-# b = fortify.bathy(b)
+b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
+                  lon2 = max(pretty(SM$LON)),
+                  lat1 = min(pretty(SM$LAT)),
+                  lat2 = max(pretty(SM$LAT)),
+                  resolution = 4)
+
+b = fortify.bathy(b)
 
 sd = SM %>%
   subset(SITE %in% good_sites) %>%
@@ -370,18 +370,16 @@ map = ggplot() +
   geom_point(data = map, aes(x = lon, y = lat),
              alpha = 0.3, size = 5) +
   geom_text_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, ""))) +
-  # geom_contour(data = b,
-  #              aes(x = x, y = y, z = z),
-  #              breaks = seq(-8000, 0, by = 200),
-  #              size = c(0.05),
-  #              alpha = 0.8,
-  #              colour = topo.colors(3310)) +
+  geom_contour(data = b,
+               aes(x = x, y = y, z = z),
+               breaks = seq(-8000, 0, by = 200),
+               size = c(0.05),
+               alpha = 0.8,
+               colour = topo.colors(1510)) +
   ggdark::dark_theme_minimal() +
   # theme_void() +
   theme(legend.position = "none",
         axis.title = element_blank()) +
   coord_fixed()
 
-png(paste0("/Users/", Sys.info()[7], "/Desktop/map_sd.png"),units = "in", res = 100,  height = 6, width = 10)
 sd + map
-dev.off()
