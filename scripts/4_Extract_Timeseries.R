@@ -368,13 +368,13 @@ map = SM %>%
 
 map = ggplot() +
   geom_point(data = map, aes(x = lon, y = lat),
-             alpha = 0.3, size = 5) +
+             alpha = 0.5, size = 5) +
   geom_text_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, ""))) +
   geom_contour(data = b,
                aes(x = x, y = y, z = z),
                breaks = seq(-8000, 0, by = 200),
                size = c(0.05),
-               alpha = 0.8,
+               alpha = 0.5,
                colour = topo.colors(1510)) +
   ggdark::dark_theme_minimal() +
   # theme_void() +
