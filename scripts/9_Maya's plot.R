@@ -97,7 +97,7 @@ catch = catch %>%
     coord_fixed(ratio = 2) +
     ylab("SST") +
     xlab("Month") +
-    ggtitle("Maya's plot")+
+    ggtitle("XXX")+
     guides(color = guide_legend(override.aes = list(shape = c(17, 16) ) ) ))
 
 pdf("/Users/Kisei/Desktop/catch_sst.pdf", height = 5, width = 10)
