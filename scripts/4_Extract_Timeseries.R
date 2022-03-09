@@ -323,6 +323,7 @@ vis_miss(SM[,c(19:dim(SM)[2])])
 sst = cor(SM[,c(11:18)], use = "complete.obs")
 chla = cor(SM[,c(19:dim(SM)[2])], use = "complete.obs")
 
+dev.off()
 corrplot(sst, method = "shade", cl.lim = c(min(sst), 1), is.corr = F)
 corrplot(chla, method = "shade", cl.lim = c(min(chla), 1), is.corr = F)
 
@@ -357,7 +358,7 @@ sites_with_high_sd = SM %>%
   subset(SITE %in% good_sites) %>%
   group_by(SITE) %>%
   summarise(sd = median(sd_sst_YR01)) %>%
-    top_n(sd, 3)
+  top_n(sd, 3)
 
 map = SM %>%
   subset(SITE %in% good_sites) %>%
@@ -369,13 +370,14 @@ map = SM %>%
 map = ggplot() +
   geom_point(data = map, aes(x = lon, y = lat),
              alpha = 0.5, size = 5) +
-  geom_text_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, ""))) +
-  geom_contour(data = b,
-               aes(x = x, y = y, z = z),
-               breaks = seq(-8000, 0, by = 200),
-               size = c(0.05),
-               alpha = 0.5,
-               colour = topo.colors(1510)) +
+  geom_label_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
+                  fill = alpha(c("white"),0.5)) +
+  # geom_contour(data = b,
+  #              aes(x = x, y = y, z = z),
+  #              breaks = seq(-8000, 0, by = 200),
+  #              size = c(0.05),
+  #              alpha = 0.5,
+  #              colour = topo.colors(1510)) +
   ggdark::dark_theme_minimal() +
   # theme_void() +
   theme(legend.position = "none",
