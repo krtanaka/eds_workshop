@@ -331,13 +331,8 @@ detach("package:plyr", unload = TRUE)
 n = SM %>% group_by(SITE) %>% summarise(n = n()) %>% subset(n > 2)
 good_sites = n$SITE
 
-b = getNOAA.bathy(lon1 = min(pretty(SM$LON)),
-                  lon2 = max(pretty(SM$LON)),
-                  lat1 = min(pretty(SM$LAT)),
-                  lat2 = max(pretty(SM$LAT)),
-                  resolution = 4)
-
-b = fortify.bathy(b)
+library(ggOceanMaps)
+library(metR)
 
 sd = SM %>%
   subset(SITE %in% good_sites) %>%
@@ -367,21 +362,15 @@ map = SM %>%
             lat = mean(LAT),
             sd = median(sd_sst_YR01))
 
-map = ggplot() +
+map = basemap(limits = c(-156.5, -154.5, 18.3, 21),
+              land.col = "gray20",
+              land.border.col = NA,
+              bathymetry = TRUE) +
   geom_point(data = map, aes(x = lon, y = lat),
-             alpha = 0.5, size = 5) +
-  geom_label_repel(data = map, aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
-                  fill = alpha(c("white"),0.5)) +
-  # geom_contour(data = b,
-  #              aes(x = x, y = y, z = z),
-  #              breaks = seq(-8000, 0, by = 200),
-  #              size = c(0.05),
-  #              alpha = 0.5,
-  #              colour = topo.colors(1510)) +
-  ggdark::dark_theme_minimal() +
-  # theme_void() +
-  theme(legend.position = "none",
-        axis.title = element_blank()) +
-  coord_fixed()
+             alpha = 0.5, size = 5, col = "green") +
+  geom_label_repel(data = map,
+                   aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
+                   fill = alpha(c("red"),0.5)) +
+  ggdark::dark_theme_minimal()
 
 sd + map
