@@ -13,6 +13,7 @@ library(lubridate)
 library(raster)
 library(dplyr)
 library(ggjoy)
+library(ggplot2)
 
 dir = getwd()
 
