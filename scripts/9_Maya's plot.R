@@ -77,29 +77,31 @@ df_all = df_all %>%
 
 mean = df %>%
   group_by(month) %>%
-  summarise(mean = mean(mean))
+  summarise(mean = mean(mean)) %>%
+  mutate(mean = weathermetrics::celsius.to.fahrenheit(mean))
 
 catch = catch %>%
   subset(quant == "Abnormal") %>%
   group_by(month) %>%
   summarise(sst = mean(sst),
-            Number_of_Catches = n())
+            Number_of_Catches = n()) %>%
+  mutate(sst = weathermetrics::celsius.to.fahrenheit(sst))
+
+colnames(catch)[3] ="Number of Unusual Catches"
 
 (maya = ggplot() +
     # geom_jitter(data = df_all, aes(month, mean, color = "Monthly SST (1985-2019)"), alpha = 0.1, size = 3) +
+    geom_line(data = catch, aes(month, sst, color = "SST associated with Unusual Catches", group = 1)) +
+    geom_point(data = catch, aes(month, sst, color = "SST associated with Unusual Catches", size = `Number of Unusual Catches`)) +
     geom_line(data = mean, aes(month, mean, color = "Mean SST", group = 1)) +
     geom_point(data = mean, aes(month, mean, color = "Mean SST"), size = 3, shape = 17) +
-    geom_line(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", group = 1)) +
-    geom_point(data = catch, aes(month, sst, color = "SST associated with Abnormal Catches", size = Number_of_Catches)) +
     scale_color_discrete("") +
     scale_size(breaks = c(1, 5, 10, 15, 20, 25)) +
     ggdark::dark_theme_classic() +
-    coord_fixed(ratio = 2) +
-    ylab("SST") +
+    ylab("SST (Degree F)") +
     xlab("Month") +
-    ggtitle("XXX")+
     guides(color = guide_legend(override.aes = list(shape = c(17, 16) ) ) ))
 
-pdf("/Users/Kisei/Desktop/catch_sst.pdf", height = 5, width = 10)
+pdf("/Users/Kisei/Desktop/catch_sst.pdf", height = 4.5, width = 7.5)
 print(maya)
 dev.off()
