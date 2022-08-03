@@ -95,6 +95,7 @@ clim1 = SM_climtologies %>%
   ggplot(aes(x = chl_a_1998_2017, y = Site, fill = chl_a_1998_2017, color = chl_a_1998_2017)) +
   geom_joy(scale = 2, alpha = 0.8, size = 0.1, bandwidth = 0.05) +
   ylab(NULL) +
+  xlab("Chlorophyll_A_Climatology_1998_2017") +
   ggdark::dark_theme_minimal() +
   scale_fill_viridis_c("") +
   scale_color_viridis_c("") +
@@ -107,6 +108,7 @@ clim2 = SM_climtologies %>%
   ggplot(aes(x = sst_1985_2018, y = Site, fill = sst_1985_2018, color = sst_1985_2018)) +
   geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.05) +
   ylab(NULL) +
+  xlab("SST_Climatology_1985_2018") +
   ggdark::dark_theme_minimal() +
   scale_fill_gradientn(colors =  colorRamps::matlab.like(100), "") +
   scale_color_gradientn(colors =  colorRamps::matlab.like(100), "") +
@@ -114,3 +116,7 @@ clim2 = SM_climtologies %>%
 
 library(patchwork)
 clim1 + clim2
+
+png("outputs/EDS_Climatology.png", height = 8, width = 14, units = "in", res = 500)
+print(clim1 + clim2)
+dev.off()

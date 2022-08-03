@@ -374,3 +374,7 @@ map = basemap(limits = c(-156.5, -154.5, 18.3, 21),
   ggdark::dark_theme_minimal()
 
 sd + map
+
+png("outputs/EDS_Timeseries.png", height = 8, width = 14, units = "in", res = 500)
+print(sd + map)
+dev.off()
