@@ -367,10 +367,11 @@ map = basemap(limits = c(-156.5, -154.5, 18.3, 21),
               land.border.col = NA,
               bathymetry = TRUE) +
   geom_point(data = map, aes(x = lon, y = lat),
-             alpha = 0.5, size = 5, col = "green") +
+             alpha = 0.5, size = 5, shape = 21, fill = "green") +
   geom_label_repel(data = map,
-                   aes(x = lon, y = lat, label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
-                   fill = alpha(c("red"),0.5)) +
+                   aes(x = lon, y = lat,
+                       label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
+                   fill = alpha(c("red"), 0.5)) +
   ggdark::dark_theme_minimal()
 
 sd + map
