@@ -51,7 +51,7 @@ df %>%
     fill = ISLAND,
     color = ISLAND), alpha = 0.2) +
   facet_wrap(.~ISLAND, scales = "free") +
-  theme_void() +
+  # theme_void() +
   theme(legend.position = "none")
 
 ############################
