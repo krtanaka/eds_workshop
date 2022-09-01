@@ -353,7 +353,7 @@ sites_with_high_sd = SM %>%
   subset(SITE %in% good_sites) %>%
   group_by(SITE) %>%
   summarise(sd = median(sd_sst_YR01)) %>%
-  top_n(sd, 3)
+  slice_max(sd, n = 3)
 
 map = SM %>%
   subset(SITE %in% good_sites) %>%
@@ -362,19 +362,45 @@ map = SM %>%
             lat = mean(LAT),
             sd = median(sd_sst_YR01))
 
-map = basemap(limits = c(-156.5, -154.5, 18.3, 21),
-              land.col = "gray20",
-              land.border.col = NA,
-              bathymetry = TRUE) +
-  geom_point(data = map, aes(x = lon, y = lat),
-             alpha = 0.5, size = 5, shape = 21, fill = "green") +
-  geom_label_repel(data = map,
-                   aes(x = lon, y = lat,
-                       label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
-                   fill = alpha(c("red"), 0.5)) +
-  ggdark::dark_theme_minimal()
+# map = basemap(limits = c(-156.5, -154.5, 18.3, 21),
+#               land.col = "gray20",
+#               land.border.col = NA,
+#               bathymetry = TRUE) +
+#   geom_point(data = map, aes(x = lon, y = lat),
+#              alpha = 0.5, size = 5, shape = 21, fill = "green") +
+#   geom_label_repel(data = map,
+#                    aes(x = lon, y = lat,
+#                        label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
+#                    fill = alpha(c("red"), 0.5)) +
+#   ggdark::dark_theme_minimal()
 
-sd + map
+b = marmap::getNOAA.bathy(lon1 = -156.2,
+                          lon2 = -154.6,
+                          lat1 = 18.5,
+                          lat2 = 20.5,
+                          resolution = 1)
+
+b = marmap::fortify.bathy(b)
+
+(site_map = ggplot() +
+    geom_point(data = map, aes(x = lon, y = lat),
+               alpha = 0.8, size = 5, shape = 21, fill = "blue") +
+    geom_label_repel(data = map,
+                     aes(x = lon, y = lat,
+                         label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
+                     fill = alpha(c("red"), 0.8)) +
+    geom_contour(data = b,
+                 aes(x = x, y = y, z = z, colour = stat(level)),
+                 breaks = seq(-5000, 0, by = 100),
+                 size = c(0.1),
+                 alpha = 0.4,
+                 show.legend = F) +
+    # scale_color_gradientn(colors = gray.colors(100), trans = 'reverse') +
+    # scale_color_gradientn(colors = matlab.like(100)) +
+    scale_color_viridis_c() +
+    ggdark::dark_theme_minimal())
+
+sd + site_map
 
 png("outputs/EDS_Timeseries.png", height = 8, width = 14, units = "in", res = 500)
 print(sd + map)
