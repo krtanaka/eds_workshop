@@ -339,7 +339,7 @@ sd = SM %>%
   group_by(SITE) %>%
   mutate(sd = median(sd_sst_YR01)) %>%
   ggplot(aes(x = sd_sst_YR01, y = SITE , fill = sd, color = sd)) +
-  geom_joy(scale = 3, alpha = 0.8, size = 0.01) +
+  geom_joy(scale = 3, alpha = 0.8, size = 0.01, bandwidth = 0.1) +
   ylab(NULL) +
   coord_fixed(ratio = 0.06) +
   ggdark::dark_theme_minimal() +
@@ -347,13 +347,13 @@ sd = SM %>%
   scale_color_gradientn(colours = matlab.like(length(good_sites)), "") +
   theme(legend.position = "none",
         axis.title.x = element_blank()) +
-  ggtitle("Obs specific SST sd year_1", )
+  ggtitle("Obs specific SST sd year_1")
 
 sites_with_high_sd = SM %>%
   subset(SITE %in% good_sites) %>%
   group_by(SITE) %>%
   summarise(sd = median(sd_sst_YR01)) %>%
-  slice_max(sd, n = 3)
+  slice_max(sd, n = 5)
 
 map = SM %>%
   subset(SITE %in% good_sites) %>%
@@ -362,27 +362,27 @@ map = SM %>%
             lat = mean(LAT),
             sd = median(sd_sst_YR01))
 
-# map = basemap(limits = c(-156.5, -154.5, 18.3, 21),
-#               land.col = "gray20",
-#               land.border.col = NA,
-#               bathymetry = TRUE) +
-#   geom_point(data = map, aes(x = lon, y = lat),
-#              alpha = 0.5, size = 5, shape = 21, fill = "green") +
-#   geom_label_repel(data = map,
-#                    aes(x = lon, y = lat,
-#                        label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
-#                    fill = alpha(c("red"), 0.5)) +
-#   ggdark::dark_theme_minimal()
+site_map = basemap(limits = c(-156.5, -154.5, 18.3, 21),
+              land.col = "gray20",
+              land.border.col = NA,
+              bathymetry = TRUE) +
+  geom_point(data = map, aes(x = lon, y = lat),
+             alpha = 0.5, size = 5, shape = 21, fill = "green") +
+  geom_label_repel(data = map,
+                   aes(x = lon, y = lat,
+                       label = ifelse(SITE %in% sites_with_high_sd$SITE, SITE, "")),
+                   fill = alpha(c("red"), 0.5)) +
+  ggdark::dark_theme_minimal()
 
-b = marmap::getNOAA.bathy(lon1 = -156.2,
-                          lon2 = -154.6,
-                          lat1 = 18.5,
-                          lat2 = 20.5,
+b = marmap::getNOAA.bathy(lon1 = -156.5,
+                          lon2 = -154.5,
+                          lat1 = 18.65,
+                          lat2 = 20.65,
                           resolution = 1)
 
 b = marmap::fortify.bathy(b)
 
-(site_map = ggplot() +
+site_map = ggplot() +
     geom_point(data = map, aes(x = lon, y = lat),
                alpha = 0.8, size = 5, shape = 21, fill = "blue") +
     geom_label_repel(data = map,
@@ -393,12 +393,13 @@ b = marmap::fortify.bathy(b)
                  aes(x = x, y = y, z = z, colour = stat(level)),
                  breaks = seq(-5000, 0, by = 100),
                  size = c(0.1),
-                 alpha = 0.4,
+                 alpha = 0.5,
                  show.legend = F) +
     # scale_color_gradientn(colors = gray.colors(100), trans = 'reverse') +
     # scale_color_gradientn(colors = matlab.like(100)) +
     scale_color_viridis_c() +
-    ggdark::dark_theme_minimal())
+  coord_fixed() +
+    ggdark::dark_theme_minimal()
 
 sd + site_map
 
