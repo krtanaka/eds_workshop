@@ -8,6 +8,9 @@
 rm(list = ls())
 
 detach("package:plyr", unload = TRUE)
+# if you have never downloaded {plyr} this will throw an error - you don't need to run it if that's the case
+# Warning would be: "Warning message: ‘plyr’ namespace cannot be unloaded: namespace ‘plyr’ is imported by ‘ClimProjDiags’, ‘multiApply’ so cannot be unloaded"
+
 
 library(dplyr)
 library(readr)
