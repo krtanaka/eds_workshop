@@ -43,7 +43,7 @@ uP = unique(ParamDF$PARAMETER.NAME)[1:4]; uP # static and dynamic SST and chl_a
 # path to store ERDDAP nc files
 EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "EDS/") # w/o VPN
 
-if (!dir.exists(EDSpath)) {dir.create(EDSpath)}
+if (!dir.exists(EDSpath)) {dir.create(EDSpath, recursive = T)}
 
 # Pull Data from ERDDAP for each parameter
 for (iP in 1:length(uP)){
@@ -67,7 +67,7 @@ for (iP in 1:length(uP)){
 
   #find or create my output directory
   paramoutpath = paste0(EDSpath,"DataDownload/", uP[iP])
-  if (!dir.exists(paramoutpath)) {dir.create(paramoutpath)}
+  if (!dir.exists(paramoutpath)) {dir.create(paramoutpath, recursive = T)}
 
   #If no time dimension..., just pull into flat NCDF
   if (thisp$FREQUENCY == "Climatology"){
@@ -101,7 +101,7 @@ for (iP in 1:length(uP)){
 
       if(!file.exists(targetfilename)){
 
-        thisIP = griddap(x = thisp$DATASET.ID,
+        thisIP = griddap(datasetx = thisp$DATASET.ID,
                          url = thisp$URL,
                          fields = c(thisp$GRID.VARIABLE),
                          longitude = thislong,
@@ -190,7 +190,7 @@ for (iP in 1:length(uP)){
 
     #For each island
     pib_path = paste0(paramoutpath,"/Island_By_Blocks_Level_Data")
-    if (!dir.exists(pib_path)) {dir.create(pib_path)}
+    if (!dir.exists(pib_path)) {dir.create(pib_path, recursive = T)}
 
     #Loop through each island
     for (ii in 1:length(uI)){
@@ -198,7 +198,7 @@ for (iP in 1:length(uP)){
       # ii = 30
 
       #select island's data
-      thisisland = subset(Ibbox,ISLAND.CODE == uI[ii])
+      thisisland = subset(Ibbox, ISLAND.CODE == uI[ii])
 
       #Get appropriate Longitude span
       if(long180or360 == 360){
@@ -212,7 +212,7 @@ for (iP in 1:length(uP)){
       }
 
       ##griddap call to pull test data from server
-      testIP = griddap(x = thisp$DATASET.ID,
+      testIP = griddap(datasetx = thisp$DATASET.ID,
                        url = thisp$URL,
                        fields = c(trim(thisp$GRID.VARIABLE)),
                        time = c('last','last'),
@@ -268,7 +268,7 @@ for (iP in 1:length(uP)){
 
           #Try to call griddap until it works or you've tried Ntries times
           repeat{
-            thisIP = tryCatch({griddap(x = thisp$DATASET.ID,
+            thisIP = tryCatch({griddap(datasetx = thisp$DATASET.ID,
                                        url = thisp$URL,
                                        # fields = c(thisp$GRID.VARIABLE),
                                        time = c(this_start,this_end),

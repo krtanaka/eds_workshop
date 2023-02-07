@@ -393,7 +393,7 @@ site_map = ggplot() +
                  aes(x = x, y = y, z = z, colour = stat(level)),
                  breaks = seq(-5000, 0, by = 100),
                  size = c(0.1),
-                 alpha = 0.5,
+                 alpha = 0.8,
                  show.legend = F) +
     # scale_color_gradientn(colors = gray.colors(100), trans = 'reverse') +
     # scale_color_gradientn(colors = matlab.like(100)) +
