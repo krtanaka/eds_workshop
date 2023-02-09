@@ -1,9 +1,10 @@
-#################################################################
-### Scripts to attach climatologies variables to in situ data ###
-### Originally developed & conceptualized by T.A.Oliver       ###
-### Revised & Edited & Maintained by K.R.Tanaka               ###
-### POC: kisei.tanaka@noaa.gov & thomas.oliver@noaa.gov       ###
-#################################################################
+################################################################
+### Scripts to create bounding boxes around surveyed islands ###
+### Originally developed & conceptualized by T.A.Oliver      ###
+### Revised & Maintained by K.R.Tanaka & T.A.Oliver          ###
+### POC: kisei.tanaka@noaa.gov, thomas.oliver@noaa.gov,      ###
+### jessica.perelman@noaa.gov, & juliette.verstaen@noaa.gov  ###
+################################################################
 
 rm(list = ls())
 
