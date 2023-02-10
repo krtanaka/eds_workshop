@@ -8,7 +8,7 @@
 
 **SENSOR_DATASET:** The institution where the dataset originated from. This is not used in EDS, but is included as a reference for users that are interested in where the data comes from.
 
-**FREQUENCY:** This can be found in the ERDDAP metadata (SCREENSHOT). The current options are Climatology, Monthly, 8day, Daily.
+**FREQUENCY:** This can be found in the ERDDAP metadata. The current options are Climatology, Monthly, 8day, Daily.
 
 **URL:** The url of the host where the data is downloaded from. We currently only download from two ERDDAP servers: OceanWatch (https://oceanwatch.pifsc.noaa.gov/erddap/) and CoastWatch ((https://coastwatch.pifsc.noaa.gov/erddap/)
 
