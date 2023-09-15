@@ -1,3 +1,8 @@
+# Unload 'plyr' if it's loaded
+if ("package:plyr" %in% search()) {
+  unloadNamespace("plyr")
+}
+
 # List of packages to load
 packages_to_load <- c(
   "rerddap", "readr", "zoo", "ncdf4", "RNetCDF", "easyNCDF",
@@ -17,10 +22,6 @@ install_and_load_package <- function(package_name) {
 # Load packages
 lapply(packages_to_load, install_and_load_package)
 
-# Unload 'plyr' if it's loaded
-if ("package:plyr" %in% search()) {
-  unloadNamespace("plyr")
-}
 
 
 maskfun = function(x, na.rm = F, depth_threshold = -30, percent_threshold = 5){
