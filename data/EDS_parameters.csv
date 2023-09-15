@@ -1,7 +1,5 @@
 Dataset,Download,Frequency,URL,Dataset_ID,Fields,Summaries,Mask
 Chlorophyll_A_ESA_OC_CCI_v6.0_8Day,YES,8day,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-8d-v6-0,chlor_a,mean;q05;q95;sd,TRUE
-Chlorophyll_A_ESA_OC_CCI_v6.0_Clim,YES,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-1998-2017-clim,chlor_a,NA,TRUE
+Chlorophyll_A_ESA_OC_CCI_v6.0_Clim,YES,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-2022-clim_v6-0,chlor_a,NA,TRUE
 Sea_Surface_Temperature_CRW_1985-2022_Clim,YES,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v3_1_2022-clim,sea_surface_temperature,NA,FALSE
 Sea_Surface_Temperature_CRW_Monthly,YES,Monthly,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v3_1_monthly,sea_surface_temperature,mean;q05;q95;sd,FALSE
-Bathymetry_CRM10,YES,Climatology,https://coastwatch.pfeg.noaa.gov/erddap/,usgsCeCrm10_Lon0360,topo,NA,FALSE
-Bathymetry_SRTM15,YES,Climatology,https://coastwatch.pfeg.noaa.gov/erddap/,srtm15plus,z,NA,FALSE

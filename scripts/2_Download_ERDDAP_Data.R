@@ -1,371 +1,380 @@
-################################################################
-### Scripts to create bounding boxes around surveyed islands ###
-### Originally developed & conceptualized by T.A.Oliver      ###
-### Revised & Maintained by K.R.Tanaka & T.A.Oliver          ###
-### POC: kisei.tanaka@noaa.gov, thomas.oliver@noaa.gov,      ###
-### jessica.perelman@noaa.gov, & juliette.verstaen@noaa.gov  ###
-################################################################
+#############################################################
+### Scripts to download gridded data from ERDDAP server   ###
+### Originally developed & conceptualized by T.A.Oliver.  ###
+### Revised & Maintained by K.R.Tanaka & T.A.Oliver.      ###
+### POC: kisei.tanaka@noaa.gov, thomas.oliver@noaa.gov,   ###
+### jessica.perelman@noaa.gov, juliette.verstaen@noaa.gov ###
+#############################################################
 
 rm(list = ls())
 
-library(rerddap)
-library(zoo)
-library(ncdf4)
-library(RNetCDF)
-library(easyNCDF)
-library(raster)
-library(lubridate)
-library(abind)
-library(plyr)
-library(acss)
-library(dplyr)
+# Install specific version of rerddap package
+# remotes::install_version("rerddap", version = "1.0.1")
 
 # Library Calls and Function Definition
-source("scripts/EDS_HelperFunctions.R")
+source("scripts/eds_functions.R")
 
 # Setup ERRDAP Cache
-cache_setup(temp_dir = TRUE)
+cache_setup(temp_dir = T)
 cache_delete_all()
 closeAllConnections()
 
-# load your bounding boxes (Islands)
-Ibbox = read.csv("data/Island_Extents.csv", stringsAsFactors = F) # Updated Bounding boxes 2021
-Ibbox = Ibbox %>% subset(REGION == "MHI")
-uI = unique(Ibbox$ISLAND.CODE)[1]; uI
+# Read Bounding Boxes
+bbox = read_csv("data/Bounding_Boxes.csv")
+uI <- distinct(bbox, unit)$unit; uI <- uI[uI %in% c("Hawaii")]
 
-# select ERDDAP data
-ParamDF = read.csv("data/EDS_parameters.csv", stringsAsFactors = F)
-ParamDF = subset(ParamDF, DOWNLOAD == "YES")
-startwith = 1
-endwith = nrow(ParamDF)
-ParamDF = ParamDF[startwith:endwith,]
-uP = unique(ParamDF$PARAMETER.NAME)[1:4]; uP # static and dynamic SST and chl_a
+# Read Parameter and Time Series Summary Definitions
+ParamDF <- read_csv("data/EDS_parameters.csv") %>% filter(Download == "YES")
+uP <- ParamDF %>% pull(Dataset) %>% unique()
 
-# path to store ERDDAP nc files
-EDSpath = paste0("/Users/", Sys.info()[7], "/Desktop/", "EDS/") # w/o VPN
+# Define path (e.g., M drive)
+EDS_path = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/") # Local without VPNs
 
-if (!dir.exists(EDSpath)) {dir.create(EDSpath, recursive = T)}
+if (!dir.exists(EDS_path)) dir.create(EDS_path, recursive = T)
 
-# Pull Data from ERDDAP for each parameter
+# "Yes" if you want EDS to provide summary nc files
+Summaries_files = c("Yes", "No")[1]
+
+# Download each dataset from ERDDAP
 for (iP in 1:length(uP)){
 
-  # iP = 1
+  # iP = 2
 
-  #Select first parameter
-  thisp = subset(ParamDF, PARAMETER.NAME == uP[iP])
+  # Select dataset
+  thisp = subset(ParamDF, Dataset == uP[iP])
 
-  print(thisp$PARAMETER.NAME)
+  cat(thisp$Dataset)
 
-  # Get ERDDAP Info data
-  thisinfo = info(datasetid = thisp$DATASET.ID, url = thisp$URL)
+  # Fetch dataset information from ERDDAP
+  thisinfo <- tryCatch({
+    info(
+      datasetid = thisp$Dataset_ID,
+      url = thisp$URL
+    )
+  }, error = function(e) {
+    cat("An error occurred: ", conditionMessage(e), "\n")
+    cat("...Can't find this ERDDAP data by its ID...\n")
+    return(NULL)  # Return NULL instead of printing and using next
+  })
 
-  # Ask about how longitude is stored, determine if 180 or 360 style
+  # Check if dataset exists in ERDDAP
+  if (is.null(thisinfo)) {
+    cat("Dataset not found on ERDDAP. Skipping this dataset...\n")
+    next
+  }
+
+  # Check how longitude is stored, determine if 180 or 360 style
   longinfo = thisinfo$alldata$longitude
   longrange = longinfo[which(longinfo$attribute_name == "actual_range"), "value"]
   longrange_num = as.numeric(unlist(strsplit(longrange, ",")))
 
-  if(min(longrange_num) < 0){long180or360 = 180} else {long180or360 = 360}
+  if (min(longrange_num) < 0){ long180or360 = 180 } else { long180or360 = 360 }
 
-  #find or create my output directory
-  paramoutpath = paste0(EDSpath,"DataDownload/", uP[iP])
-  if (!dir.exists(paramoutpath)) {dir.create(paramoutpath, recursive = T)}
+  if (thisp$Frequency == "Climatology"){
 
-  #If no time dimension..., just pull into flat NCDF
-  if (thisp$FREQUENCY == "Climatology"){
+    # Find or create output directory
+    paramoutpath = paste0(EDS_path,"Static_Variables/", uP[iP])
+    if (!dir.exists(paramoutpath)) dir.create(paramoutpath, recursive = T)
 
-    pib_path = paste0(paramoutpath,"/Island_By_Blocks_Level_Data")
+    pib_path = paste0(paramoutpath,"/Block_Level_Data")
+    if (!dir.exists(pib_path)) dir.create(pib_path)
 
-    if (!dir.exists(pib_path)) {dir.create(pib_path)}
+    # Check if any files match the pattern
+    if (length(list.files(paste0(paramoutpath, "/"), pattern = "all_units")) > 0) {
 
-    #Loop through each island
-    for (ii in 1:length(uI)){
+      cat(paste0("EDS output for ", thisp$Dataset, " already exists.\n"))
+      next
 
-      #select island's data
-      thisisland = subset(Ibbox, ISLAND.CODE == uI[ii])
+    }
 
-      #Get appropriate Longitude span
-      if(long180or360 == 360){
+    # Create a list of indices for parallel processing
+    indices <- 1:length(uI)
 
-        thislong = long180to360(thisisland[, c("LEFT_XMIN","RIGHT_XMAX")])
+    # Loop through each unit
+    foreach(ii = indices, .packages = c("rerddap")) %do% {
 
-      }else{
+      # ii = 1
 
-        thislong = thisisland[, c("LEFT_XMIN","RIGHT_XMAX")]
+      # Select unit's data
+      this_unit = subset(bbox, unit == uI[ii])
 
-      }
+      # Get appropriate Longitude span
+      if (long180or360 == 360){
 
-      ##griddap call to pull data from server
-      targetfilename = paste0(pib_path,"/",
-                              thisisland$ISLAND.CODE,"_",
-                              thisp$PARAMETER.NAME,"_",
-                              thisp$START_DATE,".nc")
+        this_unit[, c("x_min", "x_max")] = ifelse(this_unit[, c("x_min", "x_max")] < 0,
+                                                  this_unit[, c("x_min", "x_max")] + 360,
+                                                  this_unit[, c("x_min", "x_max")])
 
-      if(!file.exists(targetfilename)){
+        thislong = this_unit[, c("x_min","x_max")]
 
-        thisIP = griddap(datasetx = thisp$DATASET.ID,
-                         url = thisp$URL,
-                         fields = c(thisp$GRID.VARIABLE),
-                         longitude = thislong,
-                         latitude = thisisland[,c("BOTTOM_YMIN","TOP_YMAX")],
-                         fmt = "nc",
-                         store = disk(path = pib_path))
+      } else {
 
-        ncstatus = file.rename(thisIP$summary$filename,
-                               targetfilename)
-
-        print(paste0(thisisland$ISLAND.CODE," written to disk. ",
-                     ii,' of ',
-                     length(uI)))
+        thislong = this_unit[, c("x_min","x_max")]
 
       }
 
-    }# All Island Closes
+      # Make a griddap call to pull data from server
+      targetfilename = paste0(pib_path, "/",
+                              this_unit$unit, "_",
+                              thisp$Dataset, ".nc")
 
-    print(paste0("Completed ",thisp$PARAMETER.NAME," Check: ",length(uI)," islands data present. "))
+      if (!file.exists(targetfilename)){
 
-    MergedRasterFileName = paste0(paramoutpath, "/",
-                                  uP[iP], "_",
-                                  thisp$START_DATE, "_AllIslands.nc")
+        tryCatch({
+          thisIP = griddap(datasetx = thisp$Dataset_ID,
+                           url = thisp$URL,
+                           fields = c(thisp$Fields),
+                           longitude = thislong,
+                           latitude = this_unit[, c("y_min","y_max")],
+                           fmt = "nc",
+                           store = disk(path = pib_path))
 
-    if(!file.exists(MergedRasterFileName)){
+          ncstatus = file.rename(thisIP$summary$filename,
+                                 targetfilename)
 
-      #reread each file, merge into single ncdf, output...
-      print(paste0("completed each island. Merging netcdfs now..."))
+          cat(paste0(this_unit$unit,
+                     " written to disk. ",
+                     ii,
+                     ' of ',
+                     length(uI), "\n"))
+        }, error = function(e) {
 
-      #get list of island-level ncdfs
+          cat(paste0(e$message, ". Skipping ", this_unit$unit, "...\n"))
+
+        })
+      }
+
+    }
+
+    cat(paste0("Completed ", thisp$Dataset, ". Check: ", length(uI), " units data present.\n"))
+
+    MergedRasterFileName = paste0(paramoutpath, "/", uP[iP], "_all_units.nc")
+
+    if (!file.exists(MergedRasterFileName)){
+
+      # Re-read each file, merge into single ncdf, output...
+      cat(paste0("completed each unit Merging netcdfs now...\n"))
+
+      # Get list of island-level ncdfs
       ILnc = list.files(pib_path,pattern = "*.nc", full.names = T)
-      r = raster(ILnc[1])
-      crs(r) = "+proj=longlat +datum=WGS84"
 
-      print(paste0("loaded file ", 1, " of ",length(ILnc)))
+      # skip if previous step fails to produce summary .nc files
+      if (length(ILnc) == 0) next
 
-      for(rasi in 1:length(ILnc)){
-
-        newr = raster(ILnc[rasi])
-        crs(newr) = "+proj=longlat +datum=WGS84"
-        origin(newr) = origin(r)
-        r = merge(r,newr)
-        print(paste0("loaded and merged file ",rasi," of ",length(ILnc)))
-
+      # Load and merge raster files using parallel processing
+      r <- foreach(i = 1:length(ILnc), .combine = merge, .packages = c("raster")) %do% {
+        r <- raster(ILnc[i])
+        crs(r) <- "+proj=longlat +datum=WGS84"
+        r
       }
 
-      #Write Raster as nc file
-      writeRaster(x = r,
+      r = mean(r)
+
+      # Write Raster as nc file
+      writeRaster(x = readAll(r),
                   filename = MergedRasterFileName,
                   format = "CDF",
                   overwrite = T)
 
-    }#end of Merged Raster export...
+    } # End of Merged Raster export
 
-    print(paste0("Completed ", thisp$PARAMETER.NAME, " Check: All-island merged file present."))
+    cat(paste0("Completed ", thisp$Dataset, ". Check: all units merged file present.\n"))
 
-  }else{
+  }
 
-    #Start Date
-    if(!is.Date(thisp$START_DATE)){
-      take1 = ymd(thisp$START_DATE,quiet = T)
-      if(is.na(take1)){
-        take2 = mdy(thisp$START_DATE,quiet = T)
-        if(is.na(take2)){
-          take3 = dmy(thisp$START_DATE,quiet = T)
-          if(is.na(take3)){
-            print("You've got some date errors to deal with. Check out your parameter file")
-          }else{thisp$START_DATE = take3}
-        }else{thisp$START_DATE = take2}
-      }else{thisp$START_DATE = take1}
-    }
+  if (thisp$Frequency != "Climatology"){
 
-    #End date
-    if(!is.Date(thisp$STOP_DATE)){
-      take1 = ymd(thisp$STOP_DATE,quiet = T)
-      if(is.na(take1)){
-        take2 = mdy(thisp$STOP_DATE,quiet = T)
-        if(is.na(take2)){
-          take3 = dmy(thisp$STOP_DATE,quiet = T)
-          if(is.na(take3)){
-            print("You've got some date errors to deal with. Check out your parameter file")
-          }else{thisp$STOP_DATE = take3}
-        }else{thisp$STOP_DATE = take2}
-      }else{thisp$STOP_DATE = take1}
-    }
+    # Time Series Summaries
+    # This step involves generating time-series summaries from the stored .nc data.
+    # We initially store the full time series for each unit.
+    # We can choose between storing and merging each time series individually
+    # or merging them first and then summarizing the data.
 
-    #For each island
-    pib_path = paste0(paramoutpath,"/Island_By_Blocks_Level_Data")
-    if (!dir.exists(pib_path)) {dir.create(pib_path, recursive = T)}
+    # Find or create output directory
+    paramoutpath = paste0(EDS_path,"Dynamic_Variables/", uP[iP])
+    if (!dir.exists(paramoutpath)) dir.create(paramoutpath, recursive = T)
 
-    #Loop through each island
+    pib_path = paste0(paramoutpath, "/Block_Level_Data")
+    if (!dir.exists(pib_path)) dir.create(pib_path)
+
+    # Loop through each unit
     for (ii in 1:length(uI)){
 
-      # ii = 30
+      # ii = 1
 
-      #select island's data
-      thisisland = subset(Ibbox, ISLAND.CODE == uI[ii])
+      # Select unit's bounding box data
+      this_unit = subset(bbox, unit == uI[ii])
 
-      #Get appropriate Longitude span
-      if(long180or360 == 360){
+      # Check if any files match the pattern
+      if (length(list.files(paste0(paramoutpath, "/Unit_Level_Data/"), pattern = this_unit$unit)) > 0) {
+        cat(paste0("EDS output for ", this_unit$unit, " already exists.\n"))
+        next
+      }
 
-        thislong = long180to360(thisisland[,c("LEFT_XMIN","RIGHT_XMAX")])
+      # Get appropriate Longitude span
+      if (long180or360 == 360){
 
-      }else{
+        this_unit[, c("x_min", "x_max")] = ifelse(this_unit[, c("x_min", "x_max")] < 0,
+                                                  this_unit[, c("x_min", "x_max")] + 360,
+                                                  this_unit[, c("x_min", "x_max")])
 
-        thislong = thisisland[,c("LEFT_XMIN","RIGHT_XMAX")]
+        thislong = this_unit[, c("x_min","x_max")]
+
+      } else {
+
+        thislong = this_unit[, c("x_min","x_max")]
 
       }
 
-      ##griddap call to pull test data from server
-      testIP = griddap(datasetx = thisp$DATASET.ID,
-                       url = thisp$URL,
-                       fields = c(trim(thisp$GRID.VARIABLE)),
-                       time = c('last','last'),
-                       longitude = thislong,
-                       latitude = thisisland[,c("BOTTOM_YMIN","TOP_YMAX")],
-                       store = memory())
+      # call griddap() to pull test data from server
+      # skip if an unit is outside of data range
+      testIP <- tryCatch({
+        griddap(datasetx = thisp$Dataset_ID,
+                url = thisp$URL,
+                fields = c(trim(thisp$Fields)),
+                time = c('last', 'last'),
+                longitude = thislong,
+                latitude = this_unit[, c("y_min", "y_max")],
+                store = memory())
+      }, error = function(e) {
+        cat("GRIDDAP ERROR")
+        return(NULL)
+      })
 
-      singlestep = nrow(testIP$data)/10
-
-      Nblocks = ceiling((singlestep * thisp$TIMESTEPS) / thisp$BLOCKSIZE); Nblocks
+      if (is.null(testIP)) {
+        cat("One or both longitude values outside data range. Skipping this unit...\n")
+        next
+      }
 
       # Get Metadata
       NCG = thisinfo$alldata$NC_GLOBAL
 
-      #Set Dates for each block
-      ts_start = thisp$START_DATE
-      ts_end = thisp$STOP_DATE
+      if (thisp$Frequency == "Monthly") timestep = 30.42 # (60*60*24*30.42)
+      if (thisp$Frequency == "14day") timestep = 14 # (60*60*24*14)
+      if (thisp$Frequency == "8day") timestep = 8 # (60*60*24*8)
+      if (thisp$Frequency == "5day") timestep = 5 # (60*60*24*5)
+      if (thisp$Frequency == "Weekly") timestep = 7 # (60*60*24*7)
+      if (thisp$Frequency == "Daily") timestep = 1 # (60*60*24*1)
 
-      if(thisp$FREQUENCY == "Monthly") {
-        TIMESTEP = 30#(60*60*24*30)
-      } else if (thisp$FREQUENCY == "14day"){
-        TIMESTEP = 14#(60*60*24*14)
-      } else if (thisp$FREQUENCY == "8day"){
-        TIMESTEP = 8#(60*60*24*8)
-      } else if (thisp$FREQUENCY == "Weekly"){
-        TIMESTEP = 7#(60*60*24*7)
-      } else { #Daily
-        TIMESTEP = 1#(60*60*24*1)
+      # Set start and end dates for each block
+      ts_start = NCG %>%
+        filter(attribute_name == "time_coverage_start") %>%
+        dplyr::select(value) %>%
+        mutate(value = substring(value, 1, 10)) %>%  # extract only date part
+        parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_start
+
+      ts_end = NCG %>%
+        filter(attribute_name == "time_coverage_end") %>%
+        dplyr::select(value) %>%
+        mutate(value = substring(value, 1, 10)) %>%  # extract only date part
+        parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_end
+
+      # Point to the last day of the previous month
+      ts_end <- format(as.Date(ts_end) - days(as.numeric(format(ts_end, "%d"))), "%Y-%m-%d UTC")
+      ts_end = ts_end %>% parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_end
+
+      singlestep = nrow(testIP$data); singlestep
+
+      total_timesteps = round((ts_end - ts_start)/timestep, 0) %>% as.numeric(); total_timesteps
+
+      # Create Nblocks as an integer where block_step is always 100 times longer than timestep
+      block_step <- timestep * 1000
+
+      # Calculate Nblocks based on the updated block_step and ensure it's an integer
+      Nblocks <- ceiling(as.numeric((ts_end - ts_start) / block_step))
+      if (Nblocks %% 1 != 0) {
+        Nblocks <- ceiling(Nblocks)
       }
 
-      block_step = ((ts_end - ts_start)) / Nblocks
+      # Recalculate block_step based on the updated Nblocks
+      block_step <- (ts_end - ts_start) / Nblocks
 
-      for(blockI in 1:Nblocks){
+      block_step
+      Nblocks
 
-        # blockI = 11
+      # Set the number of cores to use
+      num_cores <- min(Nblocks, detectCores()/2)
 
-        this_start = ceiling_date(ts_start + (blockI-1) * block_step, unit = "day")
-        this_end = floor_date(ts_start + ((blockI) * block_step) - TIMESTEP, unit = "day")
+      # Initialize parallel backend
+      registerDoParallel(cores = num_cores)
+      # cl <- makeCluster(num_cores)
+      # registerDoParallel(cl)
 
-        if(this_end > ts_end|blockI == Nblocks) this_end = ts_end
+      # Create a list of indices for parallel processing
+      indices <- 1:Nblocks
 
-        targetfilename = paste0(pib_path,"/",
-                                thisisland$ISLAND.CODE,"_",
-                                thisp$PARAMETER.NAME,"_",
-                                this_start,"_",
-                                this_end,".nc")
+      # Parallel loop
+      foreach(blockI = indices, .packages = c("lubridate", "rerddap")) %dopar% {
 
-        #if the targetfile doesn't already exist, call griddap
-        if(!file.exists(targetfilename)){
+        # blockI = 1
 
-          #Try multiple times...
-          Ntries = 10; Ntried = 0; Success = F
+        this_start = floor_date(ts_start + (blockI-1) * block_step, unit = "day")
+        if (blockI > 1) this_start = this_start + days(1)
 
-          #Try to call griddap until it works or you've tried Ntries times
-          repeat{
-            thisIP = tryCatch({griddap(datasetx = thisp$DATASET.ID,
-                                       url = thisp$URL,
-                                       # fields = c(thisp$GRID.VARIABLE),
-                                       time = c(this_start,this_end),
-                                       longitude = thislong,
-                                       latitude = thisisland[,c("BOTTOM_YMIN","TOP_YMAX")],
-                                       fmt = "nc",
-                                       store = disk(path = pib_path),
-                                       read = FALSE)},
-                              error = function(e){
-                                print("GRIDDAP ERROR")
-                              }
-            )
+        this_end = floor_date(ts_start + ((blockI) * block_step) - timestep, unit = "day")
+        if (this_end > ts_end | blockI == Nblocks) this_end = ts_end
 
-            #If it's a griddap_nc object (and not an error), you're good, exit repeat
-            if(Ntried > Ntries){
+        targetfilename = paste0(pib_path, "/",
+                                this_unit$unit, "_",
+                                thisp$Dataset, "_",
+                                this_start, "_",
+                                this_end, ".nc")
 
-              print(paste0("GRIDDAP exiting after ", Ntried, "tries ... All done."))
+        # If the targetfile doesn't already exist, call griddap
+        if (!file.exists(targetfilename)) {
 
-              break
+          # Define a variable to keep track of whether to continue the loop
+          continue_loop = TRUE
 
-            }else if(class(thisIP) == "character" && thisIP == "GRIDDAP ERROR"){
+          while(continue_loop) {
+            tryCatch({
+              thisIP = griddap(datasetx = thisp$Dataset_ID,
+                               url = thisp$URL,
+                               fields = c(thisp$Fields),
+                               time = c(this_start, this_end),
+                               longitude = thislong,
+                               latitude = this_unit[, c("y_min", "y_max")],
+                               fmt = "nc",
+                               store = disk(path = pib_path),
+                               read = TRUE)
+              continue_loop = FALSE # If no error occurs, set continue_loop to FALSE to exit the loop
+            }, error = function(e) {
+              cat("GRIDDAP ERROR") # The loop will continue to run until no error occurs
+            })
+          }
 
-              Ntried = Ntried + 1
-
-              if(Ntried > 3){
-
-                fl = list.files(pib_path) #get list of files
-
-                #check that the first three characters are not a known ISLAND.CODE
-                deletiontarget1 = which(!substr(fl, 1, 3) %in% substr(Ibbox$ISLAND.CODE, 1, 3))
-
-                #check that the length of the file matches the length of auto-generated names (i.e. 35)
-
-                if (length(deletiontarget1) > 0){
-
-                  deletiontarget2 = deletiontarget1[which(nchar(fl[deletiontarget1]) == 35)]
-
-                }
-
-                #Finally Check that the entropy of the character string is in the least 5% (i.e. it looks random)
-                if (length(deletiontarget2) > 0){
-
-                  Eset = acss::entropy(substr(fl, 1, 32))
-                  Ep = pcalc(Eset,Eset[deletiontarget2])
-                  deletiontarget3 = which(Ep < 0.05)
-
-                }
-
-                #Now if a file has passed all three tests, delete it any keep going.
-                if (length(deletiontarget3) > 0){
-
-                  file.remove(paste0(pib_path,"/",fl[deletiontarget3]))
-                  print(paste0("DELETED APPARENT GRIDDAP TEMP FILE: ",fl[deletiontarget3]))
-
-                }
-
-              }
-
-              print(paste0("GRIDDAP returned error: Keeping it together... Try #",Ntried))
-
-            }else{
-
-              print(paste0("GRIDDAP Returned Successfully."))
-
-              break
-
-            }# Close exit condition IF
-
-          }#close REPEAT
-
-          #once the griddap call works, rename the file
+          # Once the griddap call works, rename the file
           ncstatus = file.rename(thisIP$summary$filename, targetfilename)
 
-          print(paste0(thisisland$ISLAND.CODE,", block #",
-                       blockI," of ",
-                       Nblocks," written to disk. Island #",
-                       ii,' of ',
-                       length(uI)))
+          cat(paste0(this_unit$unit, ", block #",
+                     blockI, " of ",
+                     Nblocks, " written to disk. Unit #",
+                     ii, ' of ',
+                     length(uI), "\n"))
 
-        }#end target exists IF
+        }
 
-      }# end block loop for
+      }
 
-      print(paste0("Completed ", thisp$PARAMETER.NAME,
-                   " Check: ", Nblocks,
-                   " blocks present for ", thisisland$ISLAND.CODE,
-                   ". ", ii,
-                   " of ", length(uI), " islands."))
+      # Stop the parallel backend
+      stopImplicitCluster()
+      # stopCluster(cl)
+      # registerDoSEQ()
 
-      #For each island - set up single island folder
-      pi_path = paste0(paramoutpath,"/Island_Level_Data")
-      if (!dir.exists(pi_path)) {dir.create(pi_path)}
+      cat(paste0("Completed ", thisp$Dataset,
+                 ". Check: ", Nblocks,
+                 " blocks present for ", this_unit$unit,
+                 ". ", ii,
+                 " of ", length(uI),
+                 " units.\n"))
+
+      #For each unit - set up single unit folder
+      pi_path = paste0(paramoutpath, "/Unit_Level_Data")
+      if (!dir.exists(pi_path)) dir.create(pi_path)
 
       outfile = paste0(pi_path, "/",
-                       thisisland$ISLAND.CODE, "_",
-                       thisp$PARAMETER.NAME, "_",
+                       this_unit$unit, "_",
+                       thisp$Dataset, "_",
                        floor_date(ts_start, unit = "day"), "_",
                        floor_date(ts_end, unit = "day"), ".nc")
 
@@ -373,185 +382,217 @@ for (iP in 1:length(uP)){
 
         AllBlock = list.files(pib_path,
                               full.names = T,
-                              pattern = thisisland$ISLAND.CODE)
+                              pattern = this_unit$unit)
 
         out = merge_times_nc_list(infilenamelist = as.list(AllBlock),
-                                  variable_name = thisp$GRID.VARIABLE,
+                                  variable_name = thisp$Fields,
                                   outfilename = outfile)
       }
 
-      print(paste0("Completed ",
-                   thisp$PARAMETER.NAME,
-                   " Check: Merged time-series .nc present for ",
-                   thisisland$ISLAND.CODE))
+      cat(paste0("Completed ",
+                 thisp$Dataset,
+                 ". Merged .nc time-series present for ",
+                 this_unit$unit, ".\n"))
 
-      #For each island - run each time-series average and export
-      TsSummaries = strsplit(thisp$Summaries,";")[[1]]
+      # if you need EDS to generate unit_level summary nc files
+      if (Summaries_files == "Yes") {
 
-      #if necessary
+        # For each unit - run each time-series average and export
+        TsSummaries = strsplit(thisp$Summaries,";")[[1]]
 
-      #For each summary stat
-      for(sumi in 1:length(TsSummaries)){
+        # Loop for for each summary stat
+        for (sumi in 1:length(TsSummaries)){
 
-        #set up summary folder for island-level data
-        thisSum = TsSummaries[sumi]
+          # sumi = 1
 
-        Spi_path = paste0(pi_path, "/", thisSum)
+          # Set up summary folder for unit-level data
+          thisSum = TsSummaries[sumi]
 
-        if (!dir.exists(Spi_path)) {dir.create(Spi_path)}
+          Spi_path = paste0(pi_path, "/", thisSum)
 
-        targetfilename = paste0(Spi_path, "/",
-                                thisisland$ISLAND.CODE, "_",
-                                thisp$PARAMETER.NAME, "_",
-                                thisSum, "_",
-                                floor_date(ts_start,unit = "day"), "_",
-                                floor_date(ts_end,unit = "day"), ".nc")
+          if (!dir.exists(Spi_path)) dir.create(Spi_path)
 
-        if(!file.exists(targetfilename)){
+          targetfilename = paste0(Spi_path, "/",
+                                  this_unit$unit, "_",
+                                  thisp$Dataset, "_",
+                                  thisSum, "_",
+                                  floor_date(ts_start,unit = "day"), "_",
+                                  floor_date(ts_end,unit = "day"), ".nc")
 
-          #Load each island's TS data as raster stack
-          island_ts_nc = nc_open(outfile)
-          island_ts_t = as_datetime(as.numeric(island_ts_nc$dim$time$vals))
-          island_ts_xyt = ncvar_get(island_ts_nc,thisp$GRID.VARIABLE)
-          dim(island_ts_xyt)
+          cat(paste0("Generating Temporal Summaries...", thisSum, "...\n"))
 
-          #island_ts_xyt raster is in memory
-          if (thisSum %in% c("mean","q05","q95","sd")){
+          if (!file.exists(targetfilename)){
 
-            island_sum = apply(island_ts_xyt, c(1,2), thisSum, na.rm = T)
+            # Load each unit's TS data as raster stack
+            island_ts_nc = nc_open(outfile)
+            island_ts_t = as_datetime(as.numeric(island_ts_nc$dim$time$vals))
+            island_ts_xyt = ncvar_get(island_ts_nc, thisp$Fields)
+            dim(island_ts_xyt)
 
-          }else if (thisSum %in% c("mean_annual_range",
-                                   "mean_monthly_range",
-                                   "mean_biweekly_range")){
+            # Island_ts_xyt raster is in memory
+            if (thisSum %in% c("mean","q05","q95","sd")){
 
-            island_sum = apply(island_ts_xyt, c(1,2), thisSum, t = island_ts_t, na.rm = T)
+              island_sum = apply(island_ts_xyt, c(1,2), thisSum, na.rm = T)
 
-          }else if (thisSum %in% c("DHW.Np10y",
-                                   "DHW.MeanMax",
-                                   "DHW.MeanDur",
-                                   "DHW.MaxMax",
-                                   "DHW.CI95Max",
-                                   "DHW.Np10y_Major",
-                                   "DHW.MeanMax_Major",
-                                   "DHW.MeanDur_Major",
-                                   "DHW.MaxMax_Major",
-                                   "DHW.CI95Max_Major")){
+            } else if (thisSum %in% c("mean_annual_range",
+                                      "mean_monthly_range",
+                                      "mean_biweekly_range")){
 
-            island_sum = apply(island_ts_xyt, c(1,2), thisSum, t = island_ts_t, na.rm = T)
+              island_sum = apply(island_ts_xyt, c(1,2), thisSum, t = island_ts_t, na.rm = T)
 
-          }
+            } else if (thisSum %in% c("DHW.Np10y",
+                                      "DHW.MeanMax",
+                                      "DHW.MeanDur",
+                                      "DHW.MaxMax",
+                                      "DHW.CI95Max",
+                                      "DHW.YearsToLast",
+                                      "DHW.Np10y_Major",
+                                      "DHW.MeanMax_Major",
+                                      "DHW.MeanDur_Major",
+                                      "DHW.MaxMax_Major",
+                                      "DHW.CI95Max_Major",
+                                      "DHW.YearsToLast_Major")){
 
-          #Given Island-Level Summary, create new ncdf file and write it out.
-          write_summary_nc_from_ts(template = island_ts_nc,
-                                   data = island_sum,
-                                   variable_name = thisp$GRID.VARIABLE,
-                                   outfile = targetfilename
-          )
+              island_sum = apply(island_ts_xyt, c(1,2), thisSum, t = island_ts_t, na.rm = T)
 
-          #Clean up...
-          nc_close(island_ts_nc)
+            }
 
-        }
+            # Given Island-Level Summary, create new ncdf file and write it out.
+            # Add a try-catch block to handle the error
+            tryCatch({
 
-      }# Close Summary For
+              write_summary_nc_from_ts(template = island_ts_nc,
+                                       data = island_sum,
+                                       variable_name = thisp$Fields,
+                                       outfile = targetfilename)
 
-      print(paste0("Completed ",
-                   thisp$PARAMETER.NAME,
-                   " Check: Summary files output for ",
-                   thisisland$ISLAND.CODE,
-                   ": ",
-                   paste(TsSummaries, collapse = "; ")))
+            }, error = function(e) {
 
-    } # Close Island For
+              # Print the error message, but continue with the loop
+              cat("Error occurred:", conditionMessage(e), "\n")
 
-    #reread each file from each island/summary, merge into single ncdf, output...
+            })
 
-    print(paste0("completed each island. Merging netcdfs now..."))
-
-    # get list of island-level ncdfs
-    # For each summary stat
-    for(sumi in 1:length(TsSummaries)){
-
-      thisSum = TsSummaries[sumi]
-      Spi_path = paste0(pi_path, "/", thisSum)
-
-      #Make Needed Directories
-      d_path = paste0(paramoutpath, "/Domain_Level_Data")
-
-      if (!dir.exists(d_path)) {dir.create(d_path)}
-
-      ds_path = paste0(d_path, "/", thisSum)
-
-      if (!dir.exists(ds_path)) {dir.create(ds_path)}
-
-      raster_outfile = paste0(ds_path, "/",
-                              uP[iP], "_",
-                              thisSum, "_",
-                              thisp$START_DATE, "_",
-                              thisp$STOP_DATE, "_AllIslands.nc")
-
-      if(!file.exists(raster_outfile)){
-
-        ILnc = list.files(Spi_path, pattern = "*.nc", full.names = T)
-
-        r = raster(ILnc[1])
-
-        crs(r) = "+proj=longlat +datum=WGS84"
-
-        print(paste0("loaded file ", 1, " of ", length(ILnc)))
-
-        if(length(ILnc)>=2){
-
-          for(rasi in 2:length(ILnc)){
-
-            newr = raster(ILnc[rasi])
-            crs(newr) = "+proj=longlat +datum=WGS84"
-            origin(newr) = origin(r)
-            r = merge(r, newr)
-
-            print(paste0("loaded and merged file ", rasi, " of ", length(ILnc)))
+            # Clean up...
+            nc_close(island_ts_nc)
 
           }
 
-        }else{
-
-          #Do nothing
-
         }
 
-        #Write Raster as nc file
-        writeRaster(x = r,
-                    filename = raster_outfile,
-                    format = "CDF",
-                    overwrite = T)
+        cat(paste0("Completed ", thisp$Dataset,
+                   ". Check summary files for ", this_unit$unit,
+                   ": ", paste(TsSummaries, collapse = "; ")))
+
       }
 
-      print("-----------------------------------------------------------------------")
-      print(paste0("Raster Present for ",thisp$PARAMETER.NAME," ",thisSum,"..."))
-      print("-----------------------------------------------------------------------")
+    }
 
-    }#Close Summary Output
+    # if you need EDS to generate domain_level summary nc files
+    if (Summaries_files == "Yes") {
 
-  } # Close Not a Climatology Else
+      NCG = thisinfo$alldata$NC_GLOBAL
 
-}#Close each param For
+      # Set start and end dates for each block
+      ts_start = NCG %>%
+        filter(attribute_name == "time_coverage_start") %>%
+        dplyr::select(value) %>%
+        mutate(value = substring(value, 1, 10)) %>%  # extract only date part
+        parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_start
 
-path = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/DataDownload/")
+      ts_end = NCG %>%
+        filter(attribute_name == "time_coverage_end") %>%
+        dplyr::select(value) %>%
+        mutate(value = substring(value, 1, 10)) %>%  # extract only date part
+        parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_end
+
+      pi_path = paste0(paramoutpath, "/Unit_Level_Data")
+
+      # For each unit - run each time-series average and export
+      TsSummaries = strsplit(thisp$Summaries,";")[[1]]
+
+      # Re-read each file from each unit/summary, merge into single ncdf, output...
+      cat(paste0("Completed each unit. Merging .nc files now...\n"))
+
+      # Get list of unit-level ncdfs for each summary stat
+      for (sumi in 1:length(TsSummaries)){
+
+        thisSum = TsSummaries[sumi]
+        Spi_path = paste0(pi_path, "/", thisSum)
+
+        # Make Needed Directories
+        d_path = paste0(paramoutpath, "/Domain_Level_Data")
+        if (!dir.exists(d_path)) dir.create(d_path)
+
+        raster_outfile = paste0(d_path, "/",
+                                uP[iP], "_",
+                                thisSum, "_",
+                                floor_date(ts_start, unit = "day"), "_",
+                                floor_date(ts_end, unit = "day"), "_all_units.nc")
+
+        if (!file.exists(raster_outfile)){
+
+          ILnc = list.files(Spi_path, pattern = "*.nc", full.names = T)
+
+          # skip if previous step fails to produce summary .nc files
+          if (length(ILnc) == 0) next
+
+          r = raster(ILnc[1])
+
+          crs(r) = "+proj=longlat +datum=WGS84"
+
+          cat(paste0("loaded file ", 1, " of ", length(ILnc), "\n"))
+
+          if (length(ILnc) >= 2){
+
+            for (rasi in 2:length(ILnc)){
+
+              newr = raster(ILnc[rasi])
+              crs(newr) = "+proj=longlat +datum=WGS84"
+              origin(newr) = origin(r)
+              r = merge(r, newr)   #This merge is flipping....
+
+              cat(paste0("loaded and merged file ", rasi, " of ", length(ILnc), "\n"))
+
+            }
+
+          }
+
+          r = readAll(r)
+
+          # Write Raster as nc file
+          writeRaster(x = r,
+                      filename = raster_outfile,
+                      format = "CDF",
+                      overwrite = T)
+        }
+
+        cat(paste0("Raster Present for ", thisp$Dataset, " ", thisSum, "...\n"))
+
+      }
+
+    }
+
+  }
+
+}
+
+path = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/")
 
 dev.off()
 
 # climatologies
-plot(raster(paste0(path, "Chlorophyll_A_ESAOCCCI_Clim/Chlorophyll_A_ESAOCCCI_Clim_CumMean_1998_2017_AllIslands.nc")))
-plot(raster(paste0(path, "SST_CRW_Clim/SST_CRW_Clim_CumMean_1985_2018_AllIslands.nc")))
+plot(raster(paste0(path, "Static_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_Clim/Chlorophyll_A_ESA_OC_CCI_v6.0_Clim_all_units.nc")))
+plot(raster(paste0(path, "Static_Variables/Sea_Surface_Temperature_CRW_1985-2022_Clim/Sea_Surface_Temperature_CRW_1985-2022_Clim_all_units.nc")))
 
 # time steps
-plot(stack(paste0(path, "Chlorophyll_A_ESAOCCCI_8Day/Island_Level_Data/", uI, "_Chlorophyll_A_ESAOCCCI_8Day_1997-09-04_2018-10-28.nc")))
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/", uI, "_SST_CRW_Monthly_1985-01-31_2021-03-31.nc")))
+plot(stack(paste0(path, "Dynamic_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_8Day/Unit_Level_Data/Hawaii_Chlorophyll_A_ESA_OC_CCI_v6.0_8Day_1997-09-04_2023-02-28.nc")))
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/Hawaii_Sea_Surface_Temperature_CRW_Monthly_1985-01-31_2023-07-31.nc")))
 
 # summary statistics
 par(mfrow = c(2,2))
 
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/mean/", uI, "_SST_CRW_Monthly_mean_1985-01-31_2021-03-31.nc")), main = "mean")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q05/", uI, "_SST_CRW_Monthly_q05_1985-01-31_2021-03-31.nc")), main = "q05")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/q95/", uI, "_SST_CRW_Monthly_q95_1985-01-31_2021-03-31.nc")), main = "q95")
-plot(stack(paste0(path, "SST_CRW_Monthly/Island_Level_Data/sd/", uI, "_SST_CRW_Monthly_sd_1985-01-31_2021-03-31.nc")), main = "sd")
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/mean/Hawaii_Sea_Surface_Temperature_CRW_Monthly_mean_1985-01-31_2023-07-31.nc")), main = "mean")
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/q05/Hawaii_Sea_Surface_Temperature_CRW_Monthly_q05_1985-01-31_2023-07-31.nc")), main = "q05")
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/q95/Hawaii_Sea_Surface_Temperature_CRW_Monthly_q95_1985-01-31_2023-07-31.nc")), main = "q95")
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/sd/Hawaii_Sea_Surface_Temperature_CRW_Monthly_sd_1985-01-31_2023-07-31.nc")), main = "sd")
