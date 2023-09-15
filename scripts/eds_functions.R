@@ -1,4 +1,4 @@
-# Define the list of packages to load
+# List of packages to load
 packages_to_load <- c(
   "rerddap", "readr", "zoo", "ncdf4", "RNetCDF", "easyNCDF",
   "raster", "lubridate", "abind", "acss", "plyr", "dplyr",
@@ -6,13 +6,22 @@ packages_to_load <- c(
   "spatial", "data.table", "splitstackshape", "patchwork"
 )
 
-# Load the packages if they are installed
-for (package in packages_to_load) {
-  if (!requireNamespace(package, quietly = TRUE)) {
-    install.packages(package, dependencies = TRUE)
+# Function to install and load a package
+install_and_load_package <- function(package_name) {
+  if (!requireNamespace(package_name, quietly = TRUE)) {
+    install.packages(package_name, dependencies = TRUE)
   }
-  library(package, character.only = TRUE)
+  library(package_name, character.only = TRUE)
 }
+
+# Load packages
+lapply(packages_to_load, install_and_load_package)
+
+# Unload 'plyr' if it's loaded
+if ("package:plyr" %in% search()) {
+  unloadNamespace("plyr")
+}
+
 
 maskfun = function(x, na.rm = F, depth_threshold = -30, percent_threshold = 5){
 
