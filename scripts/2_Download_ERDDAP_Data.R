@@ -38,7 +38,7 @@ Summaries_files = c("Yes", "No")[1]
 # Download each dataset from ERDDAP
 for (iP in 1:length(uP)){
 
-  # iP = 2
+  # iP = 1
 
   # Select dataset
   thisp = subset(ParamDF, Dataset == uP[iP])
@@ -293,10 +293,10 @@ for (iP in 1:length(uP)){
       Nblocks
 
       # Set the number of cores to use
-      num_cores <- min(Nblocks, detectCores()/2)
+      # num_cores <- min(Nblocks, detectCores()/2)
 
       # Initialize parallel backend
-      registerDoParallel(cores = num_cores)
+      # registerDoParallel(cores = num_cores)
       # cl <- makeCluster(num_cores)
       # registerDoParallel(cl)
 
@@ -304,7 +304,7 @@ for (iP in 1:length(uP)){
       indices <- 1:Nblocks
 
       # Parallel loop
-      foreach(blockI = indices, .packages = c("lubridate", "rerddap")) %dopar% {
+      foreach(blockI = indices, .packages = c("lubridate", "rerddap")) %do% {
 
         # blockI = 1
 
@@ -357,7 +357,7 @@ for (iP in 1:length(uP)){
       }
 
       # Stop the parallel backend
-      stopImplicitCluster()
+      # stopImplicitCluster()
       # stopCluster(cl)
       # registerDoSEQ()
 
@@ -586,7 +586,7 @@ plot(raster(paste0(path, "Static_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_Clim/Ch
 plot(raster(paste0(path, "Static_Variables/Sea_Surface_Temperature_CRW_1985-2022_Clim/Sea_Surface_Temperature_CRW_1985-2022_Clim_all_units.nc")))
 
 # time steps
-plot(stack(paste0(path, "Dynamic_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_8Day/Unit_Level_Data/Hawaii_Chlorophyll_A_ESA_OC_CCI_v6.0_8Day_1997-09-04_2023-02-28.nc")))
+plot(stack(paste0(path, "Dynamic_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly/Unit_Level_Data/Hawaii_Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly_1997-09-04_2023-06-30.nc")))
 plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/Hawaii_Sea_Surface_Temperature_CRW_Monthly_1985-01-31_2023-07-31.nc")))
 
 # summary statistics

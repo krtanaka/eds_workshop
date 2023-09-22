@@ -118,6 +118,4 @@ clim2 = df %>%
 library(patchwork)
 clim1 + clim2
 
-png("outputs/EDS_Climatology.png", height = 8, width = 14, units = "in", res = 500)
-print(clim1 + clim2)
-dev.off()
+ggsave(last_plot(), filename = "outputs/EDS_Climatology.png", height = 8, width = 14)

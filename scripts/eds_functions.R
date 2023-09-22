@@ -1,14 +1,9 @@
-# Unload 'plyr' if it's loaded
-if ("package:plyr" %in% search()) {
-  unloadNamespace("plyr")
-}
-
 # List of packages to load
 packages_to_load <- c(
   "rerddap", "readr", "zoo", "ncdf4", "RNetCDF", "easyNCDF",
-  "raster", "lubridate", "abind", "acss", "plyr", "dplyr",
+  "raster", "lubridate", "abind", "acss", "dplyr",
   "doParallel", "foreach", "colorRamps", "ggplot2", "reshape2",
-  "spatial", "data.table", "splitstackshape", "patchwork"
+  "spatial", "data.table", "splitstackshape", "patchwork", "ggjoy"
 )
 
 # Function to install and load a package
@@ -20,9 +15,17 @@ install_and_load_package <- function(package_name) {
 }
 
 # Load packages
-lapply(packages_to_load, install_and_load_package)
+invisible(sapply(packages_to_load, install_and_load_package))
 
+# Unload 'plyr' and 'reshape2' if they are loaded
+if ("package:plyr" %in% search()) {
+  unloadNamespace("plyr")
+}
 
+if ("package:reshape2" %in% search()) {
+  unloadNamespace("reshape2")
+  install_and_load_package("reshape2")
+}
 
 maskfun = function(x, na.rm = F, depth_threshold = -30, percent_threshold = 5){
 
