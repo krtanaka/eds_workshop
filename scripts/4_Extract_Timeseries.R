@@ -395,6 +395,9 @@ sd = df %>%
   subset(site %in% good_sites) %>%
   group_by(site) %>%
   mutate(sd = median(sd_Sea_Surface_Temperature_CRW_Monthly_YR01)) %>%
+  arrange(sd) %>%
+  ungroup() %>%
+  mutate(site=factor(site, unique(site))) %>%
   ggplot(aes(x = sd_Sea_Surface_Temperature_CRW_Monthly_YR01, y = site, fill = sd, color = sd)) +
   geom_joy(scale = 3, alpha = 0.8, size = 0.01, bandwidth = 0.1) +
   ylab(NULL) +
@@ -429,11 +432,11 @@ site_map = ggplot() +
   geom_contour(data = b,
                aes(x = x, y = y, z = z),
                breaks = seq(-3000, 0, by = 300),
-               size = c(0.05),
+               # size = c(0.1),
                alpha = 0.8,
                colour = topo.colors(3682)) +
   labs(x = "", y = "") +
   ggdark::dark_theme_minimal()
 
 sd + site_map
-ggsave(last_plot(), filename = "outputs/EDS_Climatology.png", height = 8, width = 14)
+ggsave(last_plot(), filename = "outputs/EDS_Timeseries.png", height = 8, width = 14)

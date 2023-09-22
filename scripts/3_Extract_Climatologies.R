@@ -82,9 +82,7 @@ df = as.data.frame(df_sp)
 save(df, file = paste0("outputs/EDS_Climatologies_", Sys.Date(), ".RData"))
 write_csv(df, paste0("outputs/EDS_Climatologies_", Sys.Date(), ".csv"))
 
-if ("package:raster" %in% search()) {
-  unloadNamespace("raster")
-}
+if ("package:raster" %in% search()) unloadNamespace("raster")
 
 good_sites = df %>% group_by(site) %>% dplyr::summarise(n = n()) %>% subset(n > 2)
 good_sites = unique(good_sites$site)
