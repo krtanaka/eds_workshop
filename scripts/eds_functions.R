@@ -1,9 +1,15 @@
+# you'll need to install ggOceanMapsData from github for mapping
+# install.packages("ggOceanMapsData",
+#  repos = c("https://mikkovihtakari.github.io/drat",
+#            "https://cloud.r-project.org"))
+
 # List of packages to load
 packages_to_load <- c(
   "rerddap", "readr", "zoo", "ncdf4", "RNetCDF", "easyNCDF",
   "raster", "lubridate", "abind", "acss", "dplyr",
   "doParallel", "foreach", "colorRamps", "ggplot2", "reshape2",
-  "spatial", "data.table", "splitstackshape", "patchwork", "ggjoy"
+  "spatial", "data.table", "splitstackshape", "patchwork", "ggjoy",
+  "visdat", "corrplot", "marmap", "ggrepel", "ggOceanMaps", "ggOceanMapsData", "metR"
 )
 
 # Function to install and load a package
@@ -17,14 +23,9 @@ install_and_load_package <- function(package_name) {
 # Load packages
 invisible(sapply(packages_to_load, install_and_load_package))
 
-# Unload 'plyr' and 'reshape2' if they are loaded
+# Unload 'plyr' if it's loaded
 if ("package:plyr" %in% search()) {
   unloadNamespace("plyr")
-}
-
-if ("package:reshape2" %in% search()) {
-  unloadNamespace("reshape2")
-  install_and_load_package("reshape2")
 }
 
 maskfun = function(x, na.rm = F, depth_threshold = -30, percent_threshold = 5){
