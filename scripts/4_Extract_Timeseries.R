@@ -424,7 +424,7 @@ map = df %>%
 
 site_map = ggplot() +
   geom_point(data = map, aes(x = lon, y = lat),
-             alpha = 0.5, size = 5, shape = 21, fill = "green") +
+             alpha = 0.5, size = 5, shape = 21, fill = "red") +
   geom_label_repel(data = map,
                    aes(x = lon, y = lat,
                        label = ifelse(site %in% sites_with_high_sd$site, site, "")),
