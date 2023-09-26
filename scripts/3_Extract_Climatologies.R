@@ -13,10 +13,10 @@ dir = getwd()
 source("scripts/eds_functions.R")
 source("scripts/ExpandingExtract.R")
 
-load('data/survey.RData')
+load('data/survey_marian.RData')
 df$lon = ifelse(df$lon < 0, df$lon + 360, df$lon)
 df$unit = df$island
-df = subset(df, unit == "Hawaii")
+df = subset(df, unit %in% c("Guam", "Hawaii"))
 
 df$lon = ifelse(df$lon < 0, df$lon + 360, df$lon)
 

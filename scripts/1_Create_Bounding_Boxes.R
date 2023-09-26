@@ -24,7 +24,7 @@ if ("package:plyr" %in% search()) {
 }
 
 # Load the data
-load('data/survey.RData')
+load('data/survey_marian.RData')
 
 df <- df %>% filter(!is.na(lon) & !is.na(lat))
 
@@ -68,7 +68,7 @@ boxes <- df %>%
   mutate(across(c(x_max, x_min, y_max, y_min), round, digits = 2))
 
 df_frame <- df %>%
-  select(unit) %>%
+  dplyr::select(unit) %>%
   distinct()
 
 df <- left_join(boxes, df_frame, by = "unit") %>%

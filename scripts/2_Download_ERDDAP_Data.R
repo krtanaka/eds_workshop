@@ -21,7 +21,7 @@ closeAllConnections()
 
 # Read Bounding Boxes
 bbox = read_csv("data/Bounding_Boxes.csv")
-uI <- distinct(bbox, unit)$unit; uI <- uI[uI %in% c("Hawaii")]
+uI <- distinct(bbox, unit)$unit; uI <- uI[uI %in% c("Guam", "Hawaii")]
 
 # Read Parameter and Time Series Summary Definitions
 ParamDF <- read_csv("data/EDS_parameters.csv") %>% filter(Download == "YES")
@@ -586,13 +586,13 @@ plot(raster(paste0(path, "Static_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_Clim/Ch
 plot(raster(paste0(path, "Static_Variables/Sea_Surface_Temperature_CRW_1985-2022_Clim/Sea_Surface_Temperature_CRW_1985-2022_Clim_all_units.nc")))
 
 # time steps
-plot(stack(paste0(path, "Dynamic_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly/Unit_Level_Data/Hawaii_Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly_1997-09-04_2023-06-30.nc")))
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/Hawaii_Sea_Surface_Temperature_CRW_Monthly_1985-01-31_2023-07-31.nc")))
+plot(stack(paste0(path, "Dynamic_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly/Unit_Level_Data/Guam_Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly_1997-09-04_2023-06-30.nc")))
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/Guam_Sea_Surface_Temperature_CRW_Monthly_1985-01-31_2023-07-31.nc")))
 
 # summary statistics
 par(mfrow = c(2,2))
 
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/mean/Hawaii_Sea_Surface_Temperature_CRW_Monthly_mean_1985-01-31_2023-07-31.nc")), main = "mean")
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/q05/Hawaii_Sea_Surface_Temperature_CRW_Monthly_q05_1985-01-31_2023-07-31.nc")), main = "q05")
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/q95/Hawaii_Sea_Surface_Temperature_CRW_Monthly_q95_1985-01-31_2023-07-31.nc")), main = "q95")
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/sd/Hawaii_Sea_Surface_Temperature_CRW_Monthly_sd_1985-01-31_2023-07-31.nc")), main = "sd")
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/mean/Guam_Sea_Surface_Temperature_CRW_Monthly_mean_1985-01-31_2023-07-31.nc")), main = "mean")
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/q05/Guam_Sea_Surface_Temperature_CRW_Monthly_q05_1985-01-31_2023-07-31.nc")), main = "q05")
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/q95/Guam_Sea_Surface_Temperature_CRW_Monthly_q95_1985-01-31_2023-07-31.nc")), main = "q95")
+plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/sd/Guam_Sea_Surface_Temperature_CRW_Monthly_sd_1985-01-31_2023-07-31.nc")), main = "sd")

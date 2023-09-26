@@ -15,7 +15,7 @@ source("scripts/eds_functions.R")
 ###########################################################################
 ### read survey data points, assign distinct lat, lon, and time columns ###
 ###########################################################################
-load('data/survey.RData')
+load('data/survey_marian.RData')
 
 df$island = gsub(" ", "_", df$island)
 df$date_r = mdy(df$date)
@@ -64,7 +64,7 @@ df = subset(df, DATA_UNIT != "NONE_ASSIGNED")
 df = df[!duplicated(df[c("lat", "lon", "date_r")]), ]
 
 # Use smaller dataset for debugging
-df = df %>% subset(unit == "Hawaii")
+df = df %>% subset(unit %in% c("Guam", "Hawaii"))
 
 # List of spatial units
 unique_units = sort(unique(df$DATA_UNIT)); unique_units
@@ -399,7 +399,7 @@ sd = df %>%
   ungroup() %>%
   mutate(site=factor(site, unique(site))) %>%
   ggplot(aes(x = sd_Sea_Surface_Temperature_CRW_Monthly_YR01, y = site, fill = sd, color = sd)) +
-  geom_joy(scale = 3, alpha = 0.8, size = 0.01, bandwidth = 0.1) +
+  geom_joy(scale = 3, alpha = 0.8, size = 0.01, bandwidth = 0.05) +
   ylab(NULL) +
   coord_fixed(ratio = 0.06) +
   ggdark::dark_theme_minimal() +
@@ -434,7 +434,7 @@ site_map = ggplot() +
                breaks = seq(-3000, 0, by = 300),
                # size = c(0.1),
                alpha = 0.8,
-               colour = topo.colors(3682)) +
+               colour = topo.colors(522)) +
   labs(x = "", y = "") +
   ggdark::dark_theme_minimal()
 
