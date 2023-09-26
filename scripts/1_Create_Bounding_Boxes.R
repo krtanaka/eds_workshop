@@ -25,6 +25,7 @@ if ("package:plyr" %in% search()) {
 
 # Load the data
 load('data/survey_marian.RData')
+load('data/survey_mhi.RData')
 
 df <- df %>% filter(!is.na(lon) & !is.na(lat))
 
