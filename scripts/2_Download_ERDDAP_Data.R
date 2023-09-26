@@ -577,17 +577,23 @@ for (iP in 1:length(uP)){
 
 }
 
-path = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/")
-
-dev.off()
-
 # climatologies
-plot(raster(paste0(path, "Static_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_Clim/Chlorophyll_A_ESA_OC_CCI_v6.0_Clim_all_units.nc")))
-plot(raster(paste0(path, "Static_Variables/Sea_Surface_Temperature_CRW_1985-2022_Clim/Sea_Surface_Temperature_CRW_1985-2022_Clim_all_units.nc")))
+nc_files <- list.files(file.path( paste0("/Users/", Sys.info()[7], "/Desktop/EDS/"), "Static_Variables"), pattern = "\\.nc$", full.names = TRUE, recursive = TRUE)
+nc_files <- nc_files[!grepl("Block_Level_Data", nc_files)]
+
+par(mfrow = c(1, 2))
+
+for (nc_file in nc_files) {
+  file_name <- basename(nc_file)
+  plot(raster(nc_file), main = file_name)
+}
 
 # time steps
-plot(stack(paste0(path, "Dynamic_Variables/Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly/Unit_Level_Data/Guam_Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly_1997-09-04_2023-06-30.nc")))
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/Guam_Sea_Surface_Temperature_CRW_Monthly_1985-01-31_2023-07-31.nc")))
+nc_files <- list.files(file.path( paste0("/Users/", Sys.info()[7], "/Desktop/EDS/"), "Dynamic_Variables"), pattern = "\\.nc$", full.names = TRUE, recursive = TRUE)
+nc_files <- nc_files[grepl("Unit_Level_Data", nc_files) & !grepl("mean|sd|q05|q95", nc_files)]
+
+plot(stack(nc_files[1]))
+plot(stack(nc_files[2]))
 
 # summary statistics
 par(mfrow = c(2,2))
