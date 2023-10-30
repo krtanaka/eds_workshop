@@ -59,9 +59,10 @@ df %>%
   theme(legend.position = "none")
 
 # Export the bounding boxes as a CSV file
-bounding_boxes %>%
+df = bounding_boxes %>%
   dplyr::select(unit) %>%
   distinct() %>%
   left_join(bounding_boxes, by = "unit") %>%
-  mutate(unit = gsub(" ", "_", unit)) %>%
-  write_csv('data/Bounding_Boxes.csv')
+  mutate(unit = gsub(" ", "_", unit))
+
+write_csv(df, file = 'data/Bounding_Boxes.csv')
