@@ -24,52 +24,44 @@ if ("package:plyr" %in% search()) unloadNamespace("plyr")
 # Load sample data
 load('data/survey_mhi.RData')
 
+# Filter out rows with missing longitude or latitude
 df <- df %>% filter(!is.na(lon) & !is.na(lat))
 
-# spatial unit (e.g., island)
+# defining spatial unit (e.g., island)
 df$unit = df$island
 
-###############
-### mapping ###
-###############
+# Set the buffer size (recommended resolution > 0.5 deg, but smaller boxes for faster ERRDAP download)
+buffer = 0.1
 
-buffer = 0.1 # recommended resolution > 0.5 deg but we'll use smaller boxes for faster compuations
-
-df %>%
+# Create bounding boxes for each spatial unit
+bounding_boxes <- df %>%
   group_by(unit) %>%
-  summarise(x_min = min(lon) - buffer,
-            x_max = max(lon) + buffer,
-            y_min = min(lat) - buffer,
-            y_max = max(lat) + buffer) %>%
-  ggplot() +
-  annotation_map(map_data("world")) +
-  geom_point(data = df, aes(lon, lat, fill = unit), shape = 21, alpha = 0.5) +
-  geom_rect(mapping = aes(
-    xmin = x_min,
-    xmax = x_max,
-    ymin = y_min,
-    ymax = y_max,
-    fill = unit,
-    color = unit), alpha = 0.1) +
-  theme(legend.position = "none")
-
-############################
-### export as a csv file ###
-############################
-
-boxes <- df %>%
-  group_by(unit) %>%
-  summarise(x_min = min(lon) - buffer,
-            x_max = max(lon) + buffer,
-            y_min = min(lat) - buffer,
-            y_max = max(lat) + buffer) %>%
+  summarise(
+    x_min = min(lon) - buffer,
+    x_max = max(lon) + buffer,
+    y_min = min(lat) - buffer,
+    y_max = max(lat) + buffer) %>%
   mutate(across(c(x_max, x_min, y_max, y_min), round, digits = 2))
 
-df_frame <- df %>%
+# Create a plot with the bounding boxes and data points
+df %>%
+  ggplot() +
+  annotation_map(map_data("world")) +
+  geom_point(aes(lon, lat, fill = unit), shape = 21, alpha = 0.5) +
+  geom_rect(data = bounding_boxes,
+            aes(xmin = x_min,
+                xmax = x_max,
+                ymin = y_min,
+                ymax = y_max,
+                fill = unit,
+                color = unit),
+            alpha = 0.1) +
+  theme(legend.position = "none")
+
+# Export the bounding boxes as a CSV file
+bounding_boxes %>%
   dplyr::select(unit) %>%
-  distinct()
-
-df <- left_join(boxes, df_frame, by = "unit") %>%
-  mutate(unit = gsub(" ", "_", unit))
-
-write_csv(df, 'data/Bounding_Boxes.csv')
+  distinct() %>%
+  left_join(bounding_boxes, by = "unit") %>%
+  mutate(unit = gsub(" ", "_", unit)) %>%
+  write_csv('data/Bounding_Boxes.csv')
