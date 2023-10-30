@@ -19,11 +19,9 @@ library(sf)
 library(maps)
 
 # Unload the 'plyr' namespace if it's loaded
-if ("package:plyr" %in% search()) {
-  unloadNamespace("plyr")
-}
+if ("package:plyr" %in% search()) unloadNamespace("plyr")
 
-# Load the data
+# Load sample data
 load('data/survey_mhi.RData')
 
 df <- df %>% filter(!is.na(lon) & !is.na(lat))
@@ -35,7 +33,7 @@ df$unit = df$island
 ### mapping ###
 ###############
 
-buffer = 0.1
+buffer = 0.1 # recommended resolution > 0.5 deg but we'll use smaller boxes for faster compuations
 
 df %>%
   group_by(unit) %>%
