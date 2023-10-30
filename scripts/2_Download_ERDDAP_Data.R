@@ -8,32 +8,37 @@
 
 rm(list = ls())
 
-# Install specific version of rerddap package
+# May need to install specific version packages
 # remotes::install_version("rerddap", version = "1.0.1")
+# remotes::install_version("ncdf4", version = "1.21")
 
 # Library Calls and Function Definition
 source("scripts/eds_functions.R")
 
 # Setup ERRDAP Cache
-cache_setup(temp_dir = T)
-cache_delete_all()
-closeAllConnections()
+cache_setup(temp_dir = TRUE) # Set up ERRDAP cache using a temporary directory
+cache_delete_all()           # Delete all cache entries
+closeAllConnections()        # Close all open network connections
 
 # Read Bounding Boxes
 bbox = read_csv("data/Bounding_Boxes.csv")
-uI <- distinct(bbox, unit)$unit; uI <- uI[uI %in% c("Guam", "Hawaii")]
+uI = distinct(bbox, unit)$unit; uI
+uI = "Hawaii"
 
 # Read Parameter and Time Series Summary Definitions
 ParamDF <- read_csv("data/EDS_parameters.csv") %>% filter(Download == "YES")
 uP <- ParamDF %>% pull(Dataset) %>% unique()
 
-# Define path (e.g., M drive)
-EDS_path = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/") # Local without VPNs
+# Define path to download ERDDAP
+EDS_path = paste0(file.path(dirname(path.expand('~')),'Desktop'), "/EDS/")
 
 if (!dir.exists(EDS_path)) dir.create(EDS_path, recursive = T)
 
-# "Yes" if you want EDS to provide summary nc files
-Summaries_files = c("Yes", "No")[1]
+# Set "Yes" if you want EDS to provide summary nc files
+Summaries_files <- c("Yes", "No")[1]
+
+# Display the unique 'uP' values with their corresponding sequence numbers
+cat(paste(seq_along(uP), uP), sep = "\n")
 
 # Download each dataset from ERDDAP
 for (iP in 1:length(uP)){
@@ -47,20 +52,23 @@ for (iP in 1:length(uP)){
 
   # Fetch dataset information from ERDDAP
   thisinfo <- tryCatch({
-    info(
-      datasetid = thisp$Dataset_ID,
-      url = thisp$URL
-    )
+
+    info(datasetid = thisp$Dataset_ID, url = thisp$URL)
+
   }, error = function(e) {
+
     cat("An error occurred: ", conditionMessage(e), "\n")
     cat("...Can't find this ERDDAP data by its ID...\n")
     return(NULL)  # Return NULL instead of printing and using next
+
   })
 
   # Check if dataset exists in ERDDAP
   if (is.null(thisinfo)) {
+
     cat("Dataset not found on ERDDAP. Skipping this dataset...\n")
     next
+
   }
 
   # Check how longitude is stored, determine if 180 or 360 style
@@ -73,7 +81,7 @@ for (iP in 1:length(uP)){
   if (thisp$Frequency == "Climatology"){
 
     # Find or create output directory
-    paramoutpath = paste0(EDS_path,"Static_Variables/", uP[iP])
+    paramoutpath = paste0(EDS_path, uP[iP])
     if (!dir.exists(paramoutpath)) dir.create(paramoutpath, recursive = T)
 
     pib_path = paste0(paramoutpath,"/Block_Level_Data")
@@ -87,11 +95,17 @@ for (iP in 1:length(uP)){
 
     }
 
+    # Set the number of cores to use
+    num_cores <- detectCores()/2  # Change this to the desired number of cores
+
+    # Initialize parallel backend
+    registerDoParallel(cores = num_cores)
+
     # Create a list of indices for parallel processing
     indices <- 1:length(uI)
 
     # Loop through each unit
-    foreach(ii = indices, .packages = c("rerddap")) %do% {
+    foreach(ii = indices, .packages = c("rerddap")) %dopar% {
 
       # ii = 1
 
@@ -121,6 +135,7 @@ for (iP in 1:length(uP)){
       if (!file.exists(targetfilename)){
 
         tryCatch({
+
           thisIP = griddap(datasetx = thisp$Dataset_ID,
                            url = thisp$URL,
                            fields = c(thisp$Fields),
@@ -137,6 +152,7 @@ for (iP in 1:length(uP)){
                      ii,
                      ' of ',
                      length(uI), "\n"))
+
         }, error = function(e) {
 
           cat(paste0(e$message, ". Skipping ", this_unit$unit, "...\n"))
@@ -145,6 +161,9 @@ for (iP in 1:length(uP)){
       }
 
     }
+
+    # Stop the parallel backend
+    stopImplicitCluster()
 
     cat(paste0("Completed ", thisp$Dataset, ". Check: ", length(uI), " units data present.\n"))
 
@@ -161,12 +180,25 @@ for (iP in 1:length(uP)){
       # skip if previous step fails to produce summary .nc files
       if (length(ILnc) == 0) next
 
+      # Set number of parallel workers
+      num_workers <- detectCores()/2  # Adjust the number of workers based on your system's capacity
+
+      # Register parallel backend
+      cl <- makeCluster(num_workers)
+      registerDoParallel(cl)
+
       # Load and merge raster files using parallel processing
-      r <- foreach(i = 1:length(ILnc), .combine = merge, .packages = c("raster")) %do% {
+      r <- foreach(i = 1:length(ILnc), .combine = merge, .packages = c("raster")) %dopar% {
+
         r <- raster(ILnc[i])
         crs(r) <- "+proj=longlat +datum=WGS84"
         r
+
       }
+
+      # Stop parallel processing and clean up
+      stopCluster(cl)
+      registerDoSEQ()
 
       r = mean(r)
 
@@ -191,7 +223,7 @@ for (iP in 1:length(uP)){
     # or merging them first and then summarizing the data.
 
     # Find or create output directory
-    paramoutpath = paste0(EDS_path,"Dynamic_Variables/", uP[iP])
+    paramoutpath = paste0(EDS_path,"/", uP[iP])
     if (!dir.exists(paramoutpath)) dir.create(paramoutpath, recursive = T)
 
     pib_path = paste0(paramoutpath, "/Block_Level_Data")
@@ -207,8 +239,10 @@ for (iP in 1:length(uP)){
 
       # Check if any files match the pattern
       if (length(list.files(paste0(paramoutpath, "/Unit_Level_Data/"), pattern = this_unit$unit)) > 0) {
+
         cat(paste0("EDS output for ", this_unit$unit, " already exists.\n"))
         next
+
       }
 
       # Get appropriate Longitude span
@@ -229,6 +263,7 @@ for (iP in 1:length(uP)){
       # call griddap() to pull test data from server
       # skip if an unit is outside of data range
       testIP <- tryCatch({
+
         griddap(datasetx = thisp$Dataset_ID,
                 url = thisp$URL,
                 fields = c(trim(thisp$Fields)),
@@ -236,14 +271,19 @@ for (iP in 1:length(uP)){
                 longitude = thislong,
                 latitude = this_unit[, c("y_min", "y_max")],
                 store = memory())
+
       }, error = function(e) {
+
         cat("GRIDDAP ERROR")
         return(NULL)
+
       })
 
       if (is.null(testIP)) {
+
         cat("One or both longitude values outside data range. Skipping this unit...\n")
         next
+
       }
 
       # Get Metadata
@@ -255,6 +295,7 @@ for (iP in 1:length(uP)){
       if (thisp$Frequency == "5day") timestep = 5 # (60*60*24*5)
       if (thisp$Frequency == "Weekly") timestep = 7 # (60*60*24*7)
       if (thisp$Frequency == "Daily") timestep = 1 # (60*60*24*1)
+      if (thisp$Frequency == "1hour") timestep = round(1/6, 2) # (60*60*24*1)
 
       # Set start and end dates for each block
       ts_start = NCG %>%
@@ -262,6 +303,9 @@ for (iP in 1:length(uP)){
         dplyr::select(value) %>%
         mutate(value = substring(value, 1, 10)) %>%  # extract only date part
         parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_start
+
+      # Avoid start dates that start at midnight)
+      ts_start <- ts_start + days(1)
 
       ts_end = NCG %>%
         filter(attribute_name == "time_coverage_end") %>%
@@ -282,8 +326,11 @@ for (iP in 1:length(uP)){
 
       # Calculate Nblocks based on the updated block_step and ensure it's an integer
       Nblocks <- ceiling(as.numeric((ts_end - ts_start) / block_step))
+
       if (Nblocks %% 1 != 0) {
+
         Nblocks <- ceiling(Nblocks)
+
       }
 
       # Recalculate block_step based on the updated Nblocks
@@ -293,10 +340,10 @@ for (iP in 1:length(uP)){
       Nblocks
 
       # Set the number of cores to use
-      # num_cores <- min(Nblocks, detectCores()/2)
+      num_cores <- min(Nblocks, detectCores()/2)
 
       # Initialize parallel backend
-      # registerDoParallel(cores = num_cores)
+      registerDoParallel(cores = num_cores)
       # cl <- makeCluster(num_cores)
       # registerDoParallel(cl)
 
@@ -304,7 +351,7 @@ for (iP in 1:length(uP)){
       indices <- 1:Nblocks
 
       # Parallel loop
-      foreach(blockI = indices, .packages = c("lubridate", "rerddap")) %do% {
+      foreach(blockI = indices, .packages = c("lubridate", "rerddap")) %dopar% {
 
         # blockI = 1
 
@@ -320,6 +367,9 @@ for (iP in 1:length(uP)){
                                 this_start, "_",
                                 this_end, ".nc")
 
+        this_start = as.character(this_start)
+        this_end = as.character(this_end)
+
         # If the targetfile doesn't already exist, call griddap
         if (!file.exists(targetfilename)) {
 
@@ -327,7 +377,9 @@ for (iP in 1:length(uP)){
           continue_loop = TRUE
 
           while(continue_loop) {
+
             tryCatch({
+
               thisIP = griddap(datasetx = thisp$Dataset_ID,
                                url = thisp$URL,
                                fields = c(thisp$Fields),
@@ -337,9 +389,13 @@ for (iP in 1:length(uP)){
                                fmt = "nc",
                                store = disk(path = pib_path),
                                read = TRUE)
+
               continue_loop = FALSE # If no error occurs, set continue_loop to FALSE to exit the loop
+
             }, error = function(e) {
+
               cat("GRIDDAP ERROR") # The loop will continue to run until no error occurs
+
             })
           }
 
@@ -357,7 +413,7 @@ for (iP in 1:length(uP)){
       }
 
       # Stop the parallel backend
-      # stopImplicitCluster()
+      stopImplicitCluster()
       # stopCluster(cl)
       # registerDoSEQ()
 
@@ -477,7 +533,6 @@ for (iP in 1:length(uP)){
             nc_close(island_ts_nc)
 
           }
-
         }
 
         cat(paste0("Completed ", thisp$Dataset,
@@ -500,11 +555,18 @@ for (iP in 1:length(uP)){
         mutate(value = substring(value, 1, 10)) %>%  # extract only date part
         parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_start
 
+      # Avoid start dates that start at midnight)
+      ts_start <- ts_start + days(1)
+
       ts_end = NCG %>%
         filter(attribute_name == "time_coverage_end") %>%
         dplyr::select(value) %>%
         mutate(value = substring(value, 1, 10)) %>%  # extract only date part
         parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_end
+
+      # Point to the last day of the previous month
+      ts_end <- format(as.Date(ts_end) - days(as.numeric(format(ts_end, "%d"))), "%Y-%m-%d UTC")
+      ts_end = ts_end %>% parse_date_time(orders = c("ymd", "mdy", "dmy"), tz = "UTC"); ts_end
 
       pi_path = paste0(paramoutpath, "/Unit_Level_Data")
 
@@ -530,7 +592,7 @@ for (iP in 1:length(uP)){
                                 floor_date(ts_start, unit = "day"), "_",
                                 floor_date(ts_end, unit = "day"), "_all_units.nc")
 
-        if (!file.exists(raster_outfile)){
+        if (!file.exists(d_path)){
 
           ILnc = list.files(Spi_path, pattern = "*.nc", full.names = T)
 
@@ -577,28 +639,31 @@ for (iP in 1:length(uP)){
 
 }
 
-# climatologies
-nc_files <- list.files(file.path( paste0("/Users/", Sys.info()[7], "/Desktop/EDS/"), "Static_Variables"), pattern = "\\.nc$", full.names = TRUE, recursive = TRUE)
-nc_files <- nc_files[!grepl("Block_Level_Data", nc_files)]
+# plot static ERDDAP data
+nc_files <- list.files(file.path(EDS_path),
+                       pattern = "\\_all_units.nc$",
+                       full.names = TRUE,
+                       recursive = TRUE)
 
-par(mfrow = c(1, 2))
+par(mfrow = c(1, 3))
 
 for (nc_file in nc_files) {
   file_name <- basename(nc_file)
   plot(raster(nc_file), main = file_name)
 }
 
-# time steps
-nc_files <- list.files(file.path( paste0("/Users/", Sys.info()[7], "/Desktop/EDS/"), "Dynamic_Variables"), pattern = "\\.nc$", full.names = TRUE, recursive = TRUE)
+# plot dynamic ERDDAP data
+nc_files <- list.files(file.path(EDS_path), pattern = "\\.nc$", full.names = TRUE, recursive = TRUE)
 nc_files <- nc_files[grepl("Unit_Level_Data", nc_files) & !grepl("mean|sd|q05|q95", nc_files)]
 
 plot(stack(nc_files[1]))
 plot(stack(nc_files[2]))
 
-# summary statistics
-par(mfrow = c(2,2))
+# splot temporally summarized ERDDAP data
+par(mfrow = c(2, 2))
+statistics_names <- c("mean", "q05", "q95", "sd")
 
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/mean/Guam_Sea_Surface_Temperature_CRW_Monthly_mean_1985-01-31_2023-07-31.nc")), main = "mean")
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/q05/Guam_Sea_Surface_Temperature_CRW_Monthly_q05_1985-01-31_2023-07-31.nc")), main = "q05")
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/q95/Guam_Sea_Surface_Temperature_CRW_Monthly_q95_1985-01-31_2023-07-31.nc")), main = "q95")
-plot(stack(paste0(path, "Dynamic_Variables/Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/sd/Guam_Sea_Surface_Temperature_CRW_Monthly_sd_1985-01-31_2023-07-31.nc")), main = "sd")
+for (stat_name in statistics_names) {
+  nc_file <- paste0(EDS_path, "Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/", stat_name, "/Hawaii_Sea_Surface_Temperature_CRW_Monthly_", stat_name, "_1985-02-01_2023-08-31.nc")
+  plot(stack(nc_file), main = stat_name)
+}
