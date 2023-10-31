@@ -1,8 +1,8 @@
 # List of packages to load
-packages_to_load <- c(
-  "rerddap", "readr", "zoo", "ncdf4", "RNetCDF", "easyNCDF",
-  "raster", "lubridate", "abind", "acss", "dplyr",
-  "doParallel", "foreach", "colorRamps", "ggplot2", "reshape2",
+required_packages <- c(
+  "raster", "dplyr", "maps", "readr", "ncdf4", "filesstrings",
+  "rerddap", "zoo", "RNetCDF", "easyNCDF", "lubridate", "abind",
+  "acss", "doParallel", "foreach", "colorRamps", "ggplot2", "reshape2",
   "spatial", "data.table", "splitstackshape", "patchwork", "ggjoy"
 )
 
@@ -17,7 +17,7 @@ install_and_load_package <- function(package_name) {
 }
 
 # Load packages
-invisible(sapply(packages_to_load, install_and_load_package))
+invisible(sapply(required_packages, install_and_load_package))
 
 # Unload 'plyr' and 'reshape2' if they are loaded
 if ("package:plyr" %in% search()) {

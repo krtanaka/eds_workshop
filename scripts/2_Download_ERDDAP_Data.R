@@ -8,10 +8,6 @@
 
 rm(list = ls())
 
-# May need to install specific version packages
-# remotes::install_version("rerddap", version = "1.0.1")
-# remotes::install_version("ncdf4", version = "1.21")
-
 # Library Calls and Function Definition
 source("scripts/eds_functions.R")
 
