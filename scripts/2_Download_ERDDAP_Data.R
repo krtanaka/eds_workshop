@@ -26,7 +26,7 @@ ParamDF <- read_csv("data/EDS_parameters.csv") %>% filter(Download == "YES")
 uP <- ParamDF %>% pull(Dataset) %>% unique()
 
 # Define path to download ERDDAP
-EDS_path = paste0(file.path(dirname(path.expand('~')),'Desktop'), "/EDS/")
+EDS_path = paste0(file.path(path.expand('~'),'Desktop'), "/EDS/")
 
 if (!dir.exists(EDS_path)) dir.create(EDS_path, recursive = T)
 
@@ -163,7 +163,34 @@ for (iP in 1:length(uP)){
 
     cat(paste0("Completed ", thisp$Dataset, ". Check: ", length(uI), " units data present.\n"))
 
-    MergedRasterFileName = paste0(paramoutpath, "/", uP[iP], "_all_units.nc")
+    #For each unit - set up single unit folder
+    pi_path = paste0(paramoutpath, "/Unit_Level_Data")
+    if (!dir.exists(pi_path)) dir.create(pi_path)
+
+    outfile = paste0(pi_path, "/",
+                     this_unit$unit, "_",
+                     thisp$Dataset, ".nc")
+
+    if(!file.exists(outfile)){
+
+      AllBlock = list.files(pib_path,
+                            full.names = T,
+                            pattern = this_unit$unit)
+
+      out = merge_times_nc_list(infilenamelist = as.list(AllBlock),
+                                variable_name = thisp$Fields,
+                                outfilename = outfile)
+    }
+
+    cat(paste0("Completed ",
+               thisp$Dataset,
+               ". Merged .nc present for ",
+               this_unit$unit, ".\n"))
+
+    d_path = paste0(paramoutpath, "/Domain_Level_Data")
+    if (!dir.exists(d_path)) dir.create(d_path)
+
+    MergedRasterFileName = paste0(d_path, "/", uP[iP], "_all_units.nc")
 
     if (!file.exists(MergedRasterFileName)){
 
@@ -219,7 +246,7 @@ for (iP in 1:length(uP)){
     # or merging them first and then summarizing the data.
 
     # Find or create output directory
-    paramoutpath = paste0(EDS_path,"/", uP[iP])
+    paramoutpath = paste0(EDS_path, uP[iP])
     if (!dir.exists(paramoutpath)) dir.create(paramoutpath, recursive = T)
 
     pib_path = paste0(paramoutpath, "/Block_Level_Data")
