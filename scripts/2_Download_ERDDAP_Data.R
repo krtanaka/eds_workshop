@@ -80,7 +80,7 @@ for (iP in 1:length(uP)){
     paramoutpath = paste0(EDS_path, uP[iP])
     if (!dir.exists(paramoutpath)) dir.create(paramoutpath, recursive = T)
 
-    pib_path = paste0(paramoutpath,"/Block_Level_Data")
+    pib_path = paste0(paramoutpath,"/Unit_Level_Data")
     if (!dir.exists(pib_path)) dir.create(pib_path)
 
     # Check if any files match the pattern
@@ -162,30 +162,6 @@ for (iP in 1:length(uP)){
     stopImplicitCluster()
 
     cat(paste0("Completed ", thisp$Dataset, ". Check: ", length(uI), " units data present.\n"))
-
-    #For each unit - set up single unit folder
-    pi_path = paste0(paramoutpath, "/Unit_Level_Data")
-    if (!dir.exists(pi_path)) dir.create(pi_path)
-
-    outfile = paste0(pi_path, "/",
-                     this_unit$unit, "_",
-                     thisp$Dataset, ".nc")
-
-    if(!file.exists(outfile)){
-
-      AllBlock = list.files(pib_path,
-                            full.names = T,
-                            pattern = this_unit$unit)
-
-      out = merge_times_nc_list(infilenamelist = as.list(AllBlock),
-                                variable_name = thisp$Fields,
-                                outfilename = outfile)
-    }
-
-    cat(paste0("Completed ",
-               thisp$Dataset,
-               ". Merged .nc present for ",
-               this_unit$unit, ".\n"))
 
     d_path = paste0(paramoutpath, "/Domain_Level_Data")
     if (!dir.exists(d_path)) dir.create(d_path)
