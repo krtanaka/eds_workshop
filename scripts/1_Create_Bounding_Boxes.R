@@ -13,9 +13,6 @@ rm(list = ls())
 library(dplyr)
 library(readr)
 library(ggplot2)
-library(ggdark)
-library(rgeos)
-library(sf)
 library(maps)
 
 # Unload the 'plyr' namespace if it's loaded
