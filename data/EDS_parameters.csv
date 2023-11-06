@@ -1,6 +1,6 @@
 Dataset,Download,Frequency,URL,Dataset_ID,Fields,Summaries,Mask
 Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly,YES,Monthly,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-monthly-v6-0,chlor_a,mean;q05;q95;sd,TRUE
 Chlorophyll_A_ESA_OC_CCI_v6.0_Clim,YES,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,esa-cci-chla-2022-clim_v6-0,chlor_a,NA,TRUE
-Sea_Surface_Temperature_CRW_1985-2022_Clim,YES,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v3_1_2022-clim,sea_surface_temperature,NA,FALSE
-Sea_Surface_Temperature_CRW_Monthly,YES,Monthly,https://oceanwatch.pifsc.noaa.gov/erddap/,CRW_sst_v3_1_monthly,sea_surface_temperature,mean;q05;q95;sd,FALSE
+Sea_Surface_Temperature_NOAA_geopolar_blended_Clim,YES,Climatology,https://oceanwatch.pifsc.noaa.gov/erddap/,goes-poes-ghrsst-RAN-2003-2017-clim,analysed_sst,NA,FALSE
+Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly,YES,Monthly,https://oceanwatch.pifsc.noaa.gov/erddap/,goes-poes-monthly-ghrsst-RAN,analysed_sst,mean;q05;q95;sd,FALSE
 Bathymetry_ETOPO_2022_v1_15s,YES,Climatology,https://coastwatch.pfeg.noaa.gov/erddap/,ETOPO_2022_v1_15s,z,NA,FALSE

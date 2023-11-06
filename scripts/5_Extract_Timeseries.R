@@ -15,7 +15,7 @@ source("scripts/eds_functions.R")
 ###########################################################################
 ### read survey data points, assign distinct lat, lon, and time columns ###
 ###########################################################################
-load('data/survey_marian.RData')
+load('data/survey_mhi.RData')
 
 df$island = gsub(" ", "_", df$island)
 df$date_r = mdy(df$date)
@@ -32,10 +32,12 @@ Bounding_Boxes = read.csv("data/Bounding_Boxes.csv"); unique(Bounding_Boxes$unit
 
 #######################################################################
 ### Build list of target environmental variables                    ###
-### See folder names in M:/Environmental Data Summary/DataDownload/ ###
 #######################################################################
-paramdir = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/Dynamic_Variables/")
-parameters = list.files(path = paramdir, full.names = F); parameters
+paramdir = paste0(file.path(Sys.getenv("USERPROFILE"),"Desktop"), "/EDS/")
+parameters <- read_csv("data/EDS_parameters.csv") %>%
+  filter(Frequency != "Climatology") %>%
+  pull(Dataset) %>%
+  unique()
 
 #########################################
 ### Read EDS Parameter/Variable Table ###
@@ -63,8 +65,8 @@ cat(paste("Dropping", length(which(df$DATA_UNIT == "NONE_ASSIGNED")),
 df = subset(df, DATA_UNIT != "NONE_ASSIGNED")
 df = df[!duplicated(df[c("lat", "lon", "date_r")]), ]
 
-# Use smaller dataset for debugging
-df = df %>% subset(unit %in% c("Guam", "Hawaii"))
+# # Use smaller dataset for debugging
+# df = df %>% subset(unit %in% c("Hawaii"))
 
 # List of spatial units
 unique_units = sort(unique(df$DATA_UNIT)); unique_units
@@ -206,7 +208,7 @@ for(parameter_i in 1:length(parameters)){
 
             # Update naP
             naP_xy = plyr::aaply(rawvar,c(1,2),
-                           NAstackcount)/dim(rawvar)[3]
+                                 NAstackcount)/dim(rawvar)[3]
 
             print(paste("In-fill complete", cnt, "of", length(i_masked), ". Pixel +/-", ij_ex))
 
@@ -364,79 +366,95 @@ for(parameter_i in 1:length(parameters)){
 end_time <- Sys.time()
 end_time - start_time
 
+library(visdat)
+library(ggrepel)
+
 df[df == -9991] <- NA
 
 #make columns easier to read...
-colnames(df) = gsub("_SST_CRW_Monthly_", "_sst_", colnames(df))
-colnames(df) = gsub("_Chlorophyll_A_ESAOCCCI_", "_chl_a_", colnames(df))
+vis_miss(df[,c(names(df)[grepl("Chlorophyll_A", names(df), ignore.case = TRUE)])])
+vis_miss(df[,c(names(df)[grepl("Sea_Surface_Temperature", names(df), ignore.case = TRUE)])])
 
-vis_miss(df[,c(10:53)])
-vis_miss(df[,c(54:dim(df)[2])])
-
-chla = cor(df[,c(10:20)], use = "complete.obs")
-sst = cor(df[,c(54:64)], use = "complete.obs")
-
-dev.off()
-corrplot(sst, method = "shade", cl.lim = c(min(sst), 1), is.corr = F, tl.cex = 0.5)
-corrplot(chla, method = "shade", cl.lim = c(min(chla), 1), is.corr = F, tl.cex = 0.5)
-
-n = df %>% group_by(site) %>% summarise(n = n()) %>% subset(n > 2)
+n = df %>% group_by(site) %>% summarise(n = n()) %>% subset(n > 3)
 good_sites = n$site
 
-b = getNOAA.bathy(lon1 = min(pretty(df$lon)),
-                  lon2 = max(pretty(df$lon)),
-                  lat1 = min(pretty(df$lat)),
-                  lat2 = max(pretty(df$lat)),
-                  resolution = 1)
-
-b = fortify.bathy(b)
-
-sd = df %>%
+joy = df %>%
   subset(site %in% good_sites) %>%
   group_by(site) %>%
-  mutate(sd = median(sd_Sea_Surface_Temperature_CRW_Monthly_YR01)) %>%
+  mutate(sd = median(sd_Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly_YR01)) %>%
   arrange(sd) %>%
   ungroup() %>%
   mutate(site=factor(site, unique(site))) %>%
-  ggplot(aes(x = sd_Sea_Surface_Temperature_CRW_Monthly_YR01, y = site, fill = sd, color = sd)) +
-  geom_joy(scale = 3, alpha = 0.8, size = 0.01, bandwidth = 0.05) +
+  ggplot(aes(x = sd_Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly_YR01, y = site, fill = sd, color = sd)) +
+  geom_joy(scale = 3, alpha = 0.8, size = 0.01, bandwidth = 0.1) +
   ylab(NULL) +
-  coord_fixed(ratio = 0.06) +
-  ggdark::dark_theme_minimal() +
+  coord_fixed(ratio = 0.1) +
   scale_fill_gradientn(colours = matlab.like(length(good_sites)), "") +
   scale_color_gradientn(colours = matlab.like(length(good_sites)), "") +
   theme(legend.position = "none",
         axis.title.x = element_blank()) +
+  ggdark::dark_theme_minimal() +
   ggtitle("Obs specific SST sd year_1")
-
-sites_with_high_sd = df %>%
-  subset(site %in% good_sites) %>%
-  group_by(site) %>%
-  summarise(sd = median(sd_Sea_Surface_Temperature_CRW_Monthly_YR01)) %>%
-  slice_max(sd, n = 5)
 
 map = df %>%
   subset(site %in% good_sites) %>%
   group_by(site) %>%
   summarise(lon = mean(lon),
             lat = mean(lat),
-            sd = median(sd_Sea_Surface_Temperature_CRW_Monthly_YR01))
-
-site_map = ggplot() +
-  geom_point(data = map, aes(x = lon, y = lat),
-             alpha = 0.5, size = 5, shape = 21, fill = "red") +
-  geom_label_repel(data = map,
-                   aes(x = lon, y = lat,
-                       label = ifelse(site %in% sites_with_high_sd$site, site, "")),
-                   fill = alpha(c("red"), 0.5)) +
-  geom_contour(data = b,
-               aes(x = x, y = y, z = z),
-               breaks = seq(-3000, 0, by = 300),
-               # size = c(0.1),
-               alpha = 0.8,
-               colour = topo.colors(522)) +
+            sd = median(sd_Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly_YR01)) %>%
+  arrange(desc(sd)) %>%
+  mutate(high_sd = row_number() <= 10) %>%
+  ggplot(aes(x = lon, y = lat, fill = high_sd)) +
+  annotation_map( map_data("world"),fill = "gray20", colour = "gray80") +
+  geom_point(alpha = 0.8, size = 3, shape = 21, show.legend = F) +
+  scale_fill_discrete("", direction = -1) +
+  geom_label_repel(aes(label = ifelse(high_sd == T, site, "")),
+                   segment.colour = "white",
+                   fill = alpha(c("white"), 0.8), box.padding = 0.8, ) +
   labs(x = "", y = "") +
-  ggdark::dark_theme_minimal()
+  ggdark::dark_theme_minimal() +
+  ggtitle("Sites with 5 highest sd")
 
-sd + site_map
+joy + map
+
 ggsave(last_plot(), filename = "outputs/EDS_Timeseries.png", height = 8, width = 14)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

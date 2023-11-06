@@ -13,30 +13,22 @@ select = dplyr::select
 source("scripts/eds_functions.R")
 
 # Define the path to the EDS data directory
-dir = paste0(file.path(dirname(path.expand('~')), 'Desktop'), "/EDS/")
+dir = paste0(file.path(Sys.getenv("USERPROFILE"),"Desktop"), "/EDS/")
 
 # Load ETOPO 2022 Bathymetry and Topography data
-bathy = raster(paste0(dir, "/Bathymetry_ETOPO_2022_v1_15s/Bathymetry_ETOPO_2022_v1_15s_all_units.nc"))
+bathy = raster(paste0(dir, "/Bathymetry_ETOPO_2022_v1_15s/Domain_Level_Data/Bathymetry_ETOPO_2022_v1_15s_all_units.nc"))
 
 # List ocean color datasets that need masking
-oc = read_csv("data/EDS_parameters.csv")
-
-oc = oc %>%
+oc = read_csv("data/EDS_parameters.csv") %>%
   select("Dataset", "Download", "Mask") %>%
   filter(Mask == TRUE & Download == "YES")
 
-# Display the selected ocean color datasets
-cat("Ocean color datasets to mask:\n")
-cat(paste(oc$Dataset, collapse = "\n"))
-
-# Mask ocean color datasets
-var_list <- basename(list.dirs(dir, recursive = F))
-var_list <- var_list[var_list %in% oc$Dataset]; var_list
+# Display the selected ocean color datasets for masking
+var_list <- intersect(basename(list.dirs(dir, recursive = FALSE)), oc$Dataset)
 
 start_time <- Sys.time()
 
-cat(sprintf("Running through %d OC datasets:\n", length(var_list)))
-cat(paste(var_list, collapse = "\n"))
+cat(sprintf("Running through %d OC datasets:\n%s\n", length(var_list), paste(var_list, collapse = "\n")))
 
 for (i in 1:length(var_list)) {
 
@@ -44,8 +36,8 @@ for (i in 1:length(var_list)) {
 
   var_name = var_list[i]; var_name
 
-  unmask_path = paste0(dir, var_name, "/unmasked/")
-  mask_path = paste0(dir, var_name, "/")
+  unmask_path = paste0(dir, var_name, "/Unit_Level_Data/unmasked/")
+  mask_path = paste0(dir, var_name, "/Unit_Level_Data/")
 
   if (!dir.exists(unmask_path)) {
 

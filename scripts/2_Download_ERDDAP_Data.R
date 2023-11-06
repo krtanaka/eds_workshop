@@ -19,14 +19,14 @@ closeAllConnections()        # Close all open network connections
 # Read Bounding Boxes
 bbox = read_csv("data/Bounding_Boxes.csv")
 uI = distinct(bbox, unit)$unit; uI
-uI = "Hawaii"
+# uI = "Hawaii"
 
 # Read Parameter and Time Series Summary Definitions
 ParamDF <- read_csv("data/EDS_parameters.csv") %>% filter(Download == "YES")
 uP <- ParamDF %>% pull(Dataset) %>% unique()
 
 # Define path to download ERDDAP
-EDS_path = paste0(file.path(path.expand('~'),'Desktop'), "/EDS/")
+EDS_path = paste0(file.path(Sys.getenv("USERPROFILE"),"Desktop"), "/EDS/")
 
 if (!dir.exists(EDS_path)) dir.create(EDS_path, recursive = T)
 
@@ -591,7 +591,7 @@ for (iP in 1:length(uP)){
                                 floor_date(ts_start, unit = "day"), "_",
                                 floor_date(ts_end, unit = "day"), "_all_units.nc")
 
-        if (!file.exists(d_path)){
+        if (!file.exists(raster_outfile)){
 
           ILnc = list.files(Spi_path, pattern = "*.nc", full.names = T)
 
@@ -639,30 +639,29 @@ for (iP in 1:length(uP)){
 }
 
 # plot static ERDDAP data
-nc_files <- list.files(file.path(EDS_path),
-                       pattern = "\\_all_units.nc$",
-                       full.names = TRUE,
-                       recursive = TRUE)
-
 par(mfrow = c(1, 3))
 
-for (nc_file in nc_files) {
-  file_name <- basename(nc_file)
-  plot(raster(nc_file), main = file_name)
-}
+lapply(
+  list.files(EDS_path, pattern = "_all_units.nc$", full.names = TRUE, recursive = TRUE)[!grepl("_Monthly", list.files(EDS_path, pattern = "_all_units.nc$", full.names = TRUE, recursive = TRUE))],
+  function(nc_file) {
+    file_name <- basename(nc_file)
+    plot(raster(nc_file), main = file_name)
+  }
+)
+
 
 # plot dynamic ERDDAP data
-nc_files <- list.files(file.path(EDS_path), pattern = "\\.nc$", full.names = TRUE, recursive = TRUE)
-nc_files <- nc_files[grepl("Unit_Level_Data", nc_files) & !grepl("mean|sd|q05|q95", nc_files)]
-
-plot(stack(nc_files[1]))
-plot(stack(nc_files[2]))
+plot(stack(paste0(EDS_path, "/Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly/Unit_Level_Data/Hawaii_Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly_2002-09-06_2023-09-30.nc")[1]))
 
 # splot temporally summarized ERDDAP data
 par(mfrow = c(2, 2))
+
 statistics_names <- c("mean", "q05", "q95", "sd")
 
 for (stat_name in statistics_names) {
-  nc_file <- paste0(EDS_path, "Sea_Surface_Temperature_CRW_Monthly/Unit_Level_Data/", stat_name, "/Hawaii_Sea_Surface_Temperature_CRW_Monthly_", stat_name, "_1985-02-01_2023-08-31.nc")
-  plot(stack(nc_file), main = stat_name)
+
+  nc_file <- list.files(paste0(EDS_path, "Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly/Unit_Level_Data/", stat_name), full.names = T)
+  nc_file <- nc_file[grepl("Hawaii", nc_file)]
+  plot(raster(nc_file), main = stat_name)
+
 }

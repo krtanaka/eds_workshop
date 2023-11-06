@@ -13,10 +13,10 @@ dir = getwd()
 source("scripts/eds_functions.R")
 source("scripts/ExpandingExtract.R")
 
-load('data/survey_marian.RData')
+load('data/survey_mhi.RData')
 df$lon = ifelse(df$lon < 0, df$lon + 360, df$lon)
 df$unit = df$island
-df = subset(df, unit %in% c("Guam", "Hawaii"))
+df = subset(df, unit %in% c("Hawaii"))
 
 df$lon = ifelse(df$lon < 0, df$lon + 360, df$lon)
 
@@ -26,13 +26,16 @@ df_sp = df; df_sp = as.data.frame(df_sp)
 coordinates(df_sp) = ~lon + lat
 
 # get list of rasters (i.e., climatologies)
-EDS_path = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/Static_Variables/")
+EDS_path = paste0(file.path(Sys.getenv("USERPROFILE"),"Desktop"), "/EDS/")
 
 # Create list of climatology raster files
 rasterlist = list.files(EDS_path,
                         recursive = T,
                         pattern = "_all_units.nc",
                         full.names = T)
+
+rasterlist <- rasterlist[!grepl("mean|sd|q05|q95", rasterlist)]
+
 
 # Check rasterarized climatological variables
 strsplit(rasterlist, "/")
@@ -59,7 +62,7 @@ for (raster_i in 1:length(rasterlist)){
     this_r[this_r > 0] <- NA
   }
 
-  if (this_r@extent@xmin < 0) this_r = shift(rotate(shift(this_r, 180)), 180)
+  if (this_r@extent@xmin < 0) this_r = raster::shift(rotate(raster::shift(this_r, 180)), 180)
 
   crs(df_sp) = crs(this_r)
 
@@ -102,9 +105,9 @@ clim1 = df %>%
 
 clim2 = df %>%
   subset(site %in% good_sites) %>%
-  select(site, Sea_Surface_Temperature_CRW_1985.2022_Clim) %>%
-  `colnames<-` (c("Site", "sst_1985_2022")) %>%
-  ggplot(aes(x = sst_1985_2022, y = Site, fill = sst_1985_2022, color = sst_1985_2022)) +
+  select(site, Sea_Surface_Temperature_NOAA_geopolar_blended_Clim) %>%
+  `colnames<-` (c("Site", "sst_2002_2023")) %>%
+  ggplot(aes(x = sst_2002_2023, y = Site, fill = sst_2002_2023, color = sst_2002_2023)) +
   geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.05) +
   ylab(NULL) +
   xlab("SST_Climatology_1985_2022") +
