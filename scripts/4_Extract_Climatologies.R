@@ -1,8 +1,11 @@
 #################################################################
-### Scripts to attach climatologies variables to in situ data ###
-### Revised & Maintained by K.R.Tanaka & T.A.Oliver.          ###
-### POC: kisei.tanaka@noaa.gov, thomas.oliver@noaa.gov,       ###
-### jessica.perelman@noaa.gov, juliette.verstaen@noaa.gov     ###
+# Script for Attaching Climatology Variables to In Situ Data
+# Revised and Maintained by K. R. Tanaka and T. A. Oliver
+# Point of Contact:
+#   - kisei.tanaka@noaa.gov
+#   - thomas.oliver@noaa.gov
+#   - jessica.perelman@noaa.gov
+#   - juliette.verstaen@noaa.gov
 #################################################################
 
 rm(list = ls())
@@ -16,7 +19,7 @@ source("scripts/ExpandingExtract.R")
 load('data/survey_mhi.RData')
 df$lon = ifelse(df$lon < 0, df$lon + 360, df$lon)
 df$unit = df$island
-df = subset(df, unit %in% c("Hawaii"))
+# df = subset(df, unit %in% c("Hawaii"))
 
 df$lon = ifelse(df$lon < 0, df$lon + 360, df$lon)
 
@@ -35,7 +38,6 @@ rasterlist = list.files(EDS_path,
                         full.names = T)
 
 rasterlist <- rasterlist[!grepl("mean|sd|q05|q95", rasterlist)]
-
 
 # Check rasterarized climatological variables
 strsplit(rasterlist, "/")
@@ -83,19 +85,21 @@ beepr::beep(2)
 df = as.data.frame(df_sp)
 
 save(df, file = paste0("outputs/EDS_Climatologies_", Sys.Date(), ".RData"))
-write_csv(df, paste0("outputs/EDS_Climatologies_", Sys.Date(), ".csv"))
 
-if ("package:raster" %in% search()) unloadNamespace("raster")
-
-good_sites = df %>% group_by(site) %>% dplyr::summarise(n = n()) %>% subset(n > 2)
+good_sites = df %>% group_by(site) %>% dplyr::summarise(n = n()) %>% subset(n > 3)
 good_sites = unique(good_sites$site)
 
 clim1 = df %>%
-  subset(site %in% good_sites) %>%
-  select(site, Chlorophyll_A_ESA_OC_CCI_v6.0_Clim) %>%
-  `colnames<-` (c("Site", "chl_a_1998_2022")) %>%
-  ggplot(aes(x = chl_a_1998_2022, y = Site, fill = chl_a_1998_2022, color = chl_a_1998_2022)) +
-  geom_joy(scale = 2, alpha = 0.8, size = 0.1, bandwidth = 0.05) +
+  filter(site %in% good_sites) %>%
+  na.omit() %>%
+  arrange(Chlorophyll_A_ESA_OC_CCI_v6.0_Clim) %>%
+  ungroup() %>%
+  mutate(site = factor(site, unique(site))) %>%
+  ggplot(aes(x = Chlorophyll_A_ESA_OC_CCI_v6.0_Clim,
+             y = site  ,
+             fill = Chlorophyll_A_ESA_OC_CCI_v6.0_Clim,
+             color = Chlorophyll_A_ESA_OC_CCI_v6.0_Clim)) +
+  geom_joy(scale = 2, alpha = 0.8, size = 0.1, bandwidth = 0.1) +
   ylab(NULL) +
   xlab("Chlorophyll_A_Climatology_1998_2022") +
   ggdark::dark_theme_minimal() +
@@ -104,13 +108,18 @@ clim1 = df %>%
   theme(legend.position = "right")
 
 clim2 = df %>%
-  subset(site %in% good_sites) %>%
-  select(site, Sea_Surface_Temperature_NOAA_geopolar_blended_Clim) %>%
-  `colnames<-` (c("Site", "sst_2002_2023")) %>%
-  ggplot(aes(x = sst_2002_2023, y = Site, fill = sst_2002_2023, color = sst_2002_2023)) +
-  geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.05) +
+  filter(site %in% good_sites) %>%
+  na.omit() %>%
+  arrange(Sea_Surface_Temperature_NOAA_geopolar_blended_Clim) %>%
+  ungroup() %>%
+  mutate(site = factor(site, unique(site))) %>%
+  ggplot(aes(x = Sea_Surface_Temperature_NOAA_geopolar_blended_Clim,
+             y = site,
+             fill = Sea_Surface_Temperature_NOAA_geopolar_blended_Clim,
+             color = Sea_Surface_Temperature_NOAA_geopolar_blended_Clim)) +
+  geom_joy(scale = 2, alpha = 0.8, size = 0, bandwidth = 0.1) +
   ylab(NULL) +
-  xlab("SST_Climatology_1985_2022") +
+  xlab("SST_Climatology_2002_2017") +
   ggdark::dark_theme_minimal() +
   scale_fill_gradientn(colors =  colorRamps::matlab.like(100), "", trans = "sqrt") +
   scale_color_gradientn(colors =  colorRamps::matlab.like(100), "", trans = "sqrt") +

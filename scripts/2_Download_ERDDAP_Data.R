@@ -1,9 +1,12 @@
 #############################################################
-### Scripts to download gridded data from ERDDAP server   ###
-### Originally developed & conceptualized by T.A.Oliver.  ###
-### Revised & Maintained by K.R.Tanaka & T.A.Oliver.      ###
-### POC: kisei.tanaka@noaa.gov, thomas.oliver@noaa.gov,   ###
-### jessica.perelman@noaa.gov, juliette.verstaen@noaa.gov ###
+# Script for Downloading Gridded Data from ERDDAP Server
+# Originally Developed and Conceptualized by T. A. Oliver
+# Revised and Maintained by K. R. Tanaka and T. A. Oliver
+# Point of Contact:
+#   - kisei.tanaka@noaa.gov
+#   - thomas.oliver@noaa.gov
+#   - jessica.perelman@noaa.gov
+#   - juliette.verstaen@noaa.gov
 #############################################################
 
 rm(list = ls())
@@ -639,16 +642,15 @@ for (iP in 1:length(uP)){
 }
 
 # plot static ERDDAP data
-par(mfrow = c(1, 3))
+files = list.files(EDS_path,
+                   pattern = "_all_units.nc$",
+                   full.names = TRUE,
+                   recursive = TRUE)[!grepl("_Monthly", list.files(EDS_path, pattern = "_all_units.nc$",
+                                                                   full.names = TRUE, recursive = TRUE))]
 
-lapply(
-  list.files(EDS_path, pattern = "_all_units.nc$", full.names = TRUE, recursive = TRUE)[!grepl("_Monthly", list.files(EDS_path, pattern = "_all_units.nc$", full.names = TRUE, recursive = TRUE))],
-  function(nc_file) {
-    file_name <- basename(nc_file)
-    plot(raster(nc_file), main = file_name)
-  }
-)
-
+plot(raster(files[1]), main = "bathymetry")
+plot(raster(files[2]), main = "chl_a")
+plot(raster(files[3]), main = "sst")
 
 # plot dynamic ERDDAP data
 plot(stack(paste0(EDS_path, "/Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly/Unit_Level_Data/Hawaii_Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly_2002-09-06_2023-09-30.nc")[1]))

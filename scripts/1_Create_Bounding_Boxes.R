@@ -1,9 +1,12 @@
 #############################################################
-### Scripts to create bounding boxes around survey points ###
-### Originally developed & conceptualized by T.A.Oliver.  ###
-### Revised & Maintained by K.R.Tanaka & T.A.Oliver.      ###
-### POC: kisei.tanaka@noaa.gov, thomas.oliver@noaa.gov,   ###
-### jessica.perelman@noaa.gov, juliette.verstaen@noaa.gov ###
+# Script for Creating Bounding Boxes around Survey Points
+# Originally Developed and Conceptualized by T. A. Oliver
+# Revised and Maintained by K. R. Tanaka and T. A. Oliver
+# Point of Contact:
+#   - kisei.tanaka@noaa.gov
+#   - thomas.oliver@noaa.gov
+#   - jessica.perelman@noaa.gov
+#   - juliette.verstaen@noaa.gov
 #############################################################
 
 # Clear the workspace

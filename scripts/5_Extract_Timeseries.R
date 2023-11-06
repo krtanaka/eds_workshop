@@ -1,9 +1,12 @@
 ################################################################
-### R scripts to attach timeseries variables to in situ data ###
-### Originally developed & conceptualized by T.A.Oliver.     ###
-### Revised & Maintained by K.R.Tanaka & T.A.Oliver.         ###
-### POC: kisei.tanaka@noaa.gov, thomas.oliver@noaa.gov,      ###
-### jessica.perelman@noaa.gov, juliette.verstaen@noaa.gov    ###
+# R Script for Attaching Time Series Variables to In Situ Data
+# Originally Developed and Conceptualized by T. A. Oliver
+# Revised and Maintained by K. R. Tanaka and T. A. Oliver
+# Point of Contact:
+#   - kisei.tanaka@noaa.gov
+#   - thomas.oliver@noaa.gov
+#   - jessica.perelman@noaa.gov
+#   - juliette.verstaen@noaa.gov
 ################################################################
 
 rm(list = ls())
@@ -418,43 +421,3 @@ map = df %>%
 joy + map
 
 ggsave(last_plot(), filename = "outputs/EDS_Timeseries.png", height = 8, width = 14)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

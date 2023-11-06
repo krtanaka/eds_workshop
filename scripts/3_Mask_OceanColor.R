@@ -1,8 +1,9 @@
-###############################################################################
-### Mask Ocean Color Datasets using high-res Bathymetry and Topography data ###
-### ETOPO 2022 15 Arc-Second Global Relief Model                            ###
-### https://www.ncei.noaa.gov/products/etopo-global-relief-model            ###
-###############################################################################
+####################################################################################
+# Masking Ocean Color Datasets using High-Resolution Bathymetry and Topography Data
+# ETOPO 2022 15 Arc-Second Global Relief Model
+# Source: https://www.ncei.noaa.gov/products/etopo-global-relief-model
+# Revised and Maintained by K. R. Tanaka
+####################################################################################
 
 # Clear the workspace
 rm(list = ls())
@@ -28,7 +29,8 @@ var_list <- intersect(basename(list.dirs(dir, recursive = FALSE)), oc$Dataset)
 
 start_time <- Sys.time()
 
-cat(sprintf("Running through %d OC datasets:\n%s\n", length(var_list), paste(var_list, collapse = "\n")))
+cat(sprintf("Running through %d OC datasets:\n%s\n",
+            length(var_list), paste(var_list, collapse = "\n")))
 
 for (i in 1:length(var_list)) {
 
