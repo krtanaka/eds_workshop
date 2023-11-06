@@ -10,9 +10,7 @@ library(colorRamps)
 
 source("scripts/eds_functions.R")
 
-dir = "M:/Environmental_Data_Summary/Data_Download/"
-dir = "/mnt/ldrive/ktanaka/Environmental_Data_Summary/"
-dir = paste0("/Users/", Sys.info()[7], "/Desktop/", "Environmental_Data_Summary/")
+dir = paste0(file.path(Sys.getenv("USERPROFILE"),"Desktop"), "/EDS/")
 
 #################################
 ### list ocean color datasets ###
@@ -27,6 +25,6 @@ oc <- var_list[var_list %in% oc$Dataset]
 
 oc
 
-compare_masking(oc_data = oc[3], unit = "Oahu")
-compare_masking(oc_data = oc[3], unit = "Hawaii")
-compare_masking(oc_data = oc[3], unit = "Niihau")
+compare_masking(oc_data = oc[2], unit = "Oahu")
+compare_masking(oc_data = oc[2], unit = "Hawaii")
+compare_masking(oc_data = oc[2], unit = "Maui")

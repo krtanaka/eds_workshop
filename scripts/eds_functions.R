@@ -49,7 +49,7 @@ maskfun = function(x, na.rm = F, depth_threshold = -30, percent_threshold = 5){
 
 compare_masking <- function(oc_data, unit) {
 
-  # oc_data = "Chlorophyll_A_ESA_OC_CCI_v6.0_8Day"
+  # oc_data = "Chlorophyll_A_ESA_OC_CCI_v6.0_Monthly"
   # unit = "Guam"
 
   r = list.files(path = paste0(dir, oc_data, "/Unit_Level_Data/unmasked/"),
@@ -100,7 +100,8 @@ compare_masking <- function(oc_data, unit) {
     annotation_map(map = map_data("world"), fill = "gray50") +
     scale_fill_viridis_c("", limits = c(quantile(r$z,p = 0.05, na.rm = T),
                                         quantile(r$z,p = 0.95, na.rm = T)),
-                         oob = squish) +
+                         oob = squish,
+                         trans = "sqrt") +
     coord_equal() +
     facet_grid(~ mask) +
     ggtitle(oc_data) +
