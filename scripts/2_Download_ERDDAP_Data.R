@@ -653,7 +653,7 @@ plot(raster(files[2]), main = "chl_a")
 plot(raster(files[3]), main = "sst")
 
 # plot dynamic ERDDAP data
-plot(stack(paste0(EDS_path, "/Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly/Unit_Level_Data/Hawaii_Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly_2002-09-06_2023-09-30.nc")[1]))
+plot(stack(paste0(EDS_path, "/Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly/Unit_Level_Data/Hawaii_Sea_Surface_Temperature_NOAA_geopolar_blended_Monthly_2002-09-06_2024-01-31.nc")[1]))
 
 # splot temporally summarized ERDDAP data
 par(mfrow = c(2, 2))
