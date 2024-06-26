@@ -29,7 +29,7 @@ df_sp = df; df_sp = as.data.frame(df_sp)
 coordinates(df_sp) = ~lon + lat
 
 # get list of rasters (i.e., climatologies)
-EDS_path = paste0(file.path(Sys.getenv("USERPROFILE"),"Desktop"), "/EDS/")
+EDS_path = paste0("/Users/", Sys.info()[7], "/Desktop/EDS/")
 
 # Create list of climatology raster files
 rasterlist = list.files(EDS_path,
