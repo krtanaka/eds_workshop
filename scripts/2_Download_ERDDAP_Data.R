@@ -29,7 +29,7 @@ ParamDF <- read_csv("data/EDS_parameters.csv") %>% filter(Download == "YES")
 uP <- ParamDF %>% pull(Dataset) %>% unique()
 
 # Define path to download ERDDAP
-EDS_path = paste0(file.path(Sys.getenv("USERPROFILE"),"Desktop"), "/EDS/")
+EDS_path = file.path(fs::path_home(), "Desktop/EDS//")
 
 if (!dir.exists(EDS_path)) dir.create(EDS_path, recursive = T)
 

@@ -3,7 +3,8 @@ required_packages <- c(
   "raster", "dplyr", "maps", "readr", "ncdf4", "filesstrings",
   "rerddap", "zoo", "RNetCDF", "easyNCDF", "lubridate", "abind",
   "acss", "doParallel", "foreach", "colorRamps", "ggplot2", "reshape2",
-  "spatial", "data.table", "splitstackshape", "patchwork", "ggjoy"
+  "spatial", "data.table", "splitstackshape", "patchwork", "ggjoy",
+  "fs"
 )
 
 # renv
