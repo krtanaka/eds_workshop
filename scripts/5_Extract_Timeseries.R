@@ -416,7 +416,7 @@ map = df %>%
                    fill = alpha(c("white"), 0.8), box.padding = 0.8, ) +
   labs(x = "", y = "") +
   ggdark::dark_theme_minimal() +
-  ggtitle("Sites with 5 highest sd")
+  ggtitle("Five sites with highest sd")
 
 joy + map
 

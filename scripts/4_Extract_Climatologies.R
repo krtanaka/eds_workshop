@@ -68,13 +68,13 @@ for (raster_i in 1:length(rasterlist)){
 
   crs(df_sp) = crs(this_r)
 
-  print(paste0("Step ", raster_i, " of ", length(rasterlist), ": ", rasname))
+  cat(paste0("Step ", raster_i, " of ", length(rasterlist), ": ", rasname, "\n"))
 
   this_Ex = ExpandingExtract(this_r, df_sp, Dists = seq(0, 100, 10))
 
   eval(parse(text = paste0("df_sp$", rasname, " = this_Ex$values")))
 
-  print(paste0("Step ", raster_i, " of ", length(rasterlist), ": Extraction Complete."))
+  cat(paste0("Step ", raster_i, " of ", length(rasterlist), ": Extraction Complete.\n"))
 
 }
 
